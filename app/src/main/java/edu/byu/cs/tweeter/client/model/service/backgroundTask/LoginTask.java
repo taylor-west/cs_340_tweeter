@@ -14,17 +14,17 @@ import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 /**
  * Background task that logs in a user (i.e., starts a session).
  */
-public class LoginTask extends BackgroundTask {
+public class LoginTask extends AuthenticateTask {
 
     private static final String LOG_TAG = "LoginTask";
 
-    public static final String USER_KEY = "user";
-    public static final String AUTH_TOKEN_KEY = "auth-token";
+//    public static final String USER_KEY = "user";
+//    public static final String AUTH_TOKEN_KEY = "auth-token";
 
     /**
      * The user's username (or "alias" or "handle"). E.g., "@susan".
      */
-    private String username;
+    private String alias;
     /**
      * The user's password.
      */
@@ -33,58 +33,52 @@ public class LoginTask extends BackgroundTask {
     /**
      * The logged-in user returned by the server.
      */
-    protected User user;
+    protected User loggedInUser;
 
     /**
      * The auth token returned by the server.
      */
-    protected AuthToken authToken;
+    protected AuthToken loggedInAuthToken;
 
-    private ServerFacade serverFacade;
 
-    public LoginTask(UserService userService, String username, String password, Handler messageHandler) {
+    public LoginTask(UserService userService, String alias, String password, Handler messageHandler) {
         super(messageHandler);
 
-        this.username = username;
+        this.alias = alias;
         this.password = password;
     }
 
     @Override
-    protected void runTask() {
-        try {
-            LoginRequest request = new LoginRequest(username, password);
-            LoginResponse response = getServerFacade().login(request, UserService.URL_PATH);
-
-            if (response.isSuccess()) {
-                this.user = response.getUser();
-                this.authToken = response.getAuthToken();
+    protected void performTask() {
+//        try {
+//            LoginRequest request = new LoginRequest(alias, password);
+//            LoginResponse response = getServerFacade().login(request, UserService.URL_PATH);
+//
+//            if (response.isSuccess()) {
+//                this.loggedInUser = response.getUser();
+//                this.loggedInAuthToken = response.getAuthToken();
+                this.loggedInUser = getFakeData().getFirstUser();
+                this.loggedInAuthToken = getFakeData().getAuthToken();
                 sendSuccessMessage();
-            } else {
-                sendFailedMessage(response.getMessage());
-            }
-        } catch (Exception ex) {
-            Log.e(LOG_TAG, ex.getMessage(), ex);
-            sendExceptionMessage(ex);
-        }
+//            } else {
+//                sendFailedMessage(response.getMessage());
+//            }
+//        } catch (Exception ex) {
+//            Log.e(LOG_TAG, ex.getMessage(), ex);
+//            sendExceptionMessage(ex);
+//        }
+
     }
 
-    protected void loadSuccessBundle(Bundle msgBundle) {
-        msgBundle.putSerializable(USER_KEY, this.user);
-        msgBundle.putSerializable(AUTH_TOKEN_KEY, this.authToken);
+    protected Bundle constructSuccessBundle() {
+        Bundle msgBundle = new Bundle();
+        msgBundle.putBoolean(SUCCESS_KEY, true);
+        msgBundle.putSerializable(USER_KEY, this.loggedInUser);
+        msgBundle.putSerializable(AUTH_TOKEN_KEY, this.loggedInAuthToken);
+        return msgBundle;
     }
 
-    /**
-     * Returns an instance of {@link ServerFacade}. Allows mocking of the ServerFacade class for
-     * testing purposes. All usages of ServerFacade should get their instance from this method to
-     * allow for proper mocking.
-     *
-     * @return the instance.
-     */
-    ServerFacade getServerFacade() {
-        if(serverFacade == null) {
-            serverFacade = new ServerFacade();
-        }
-
-        return serverFacade;
+    protected String getLogTag() {
+        return LOG_TAG;
     }
 }

@@ -5,6 +5,9 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import edu.byu.cs.tweeter.client.model.net.ServerFacade;
+import edu.byu.cs.tweeter.util.FakeData;
+
 public abstract class BackgroundTask implements Runnable {
 
     private static final String LOG_TAG = "Task";
@@ -14,6 +17,13 @@ public abstract class BackgroundTask implements Runnable {
     public static final String EXCEPTION_KEY = "exception";
 
     protected final Handler messageHandler;
+    protected ServerFacade serverFacade;
+
+    protected abstract void performTask();
+
+    protected abstract Bundle constructSuccessBundle();
+
+    protected abstract String getLogTag();
 
     protected BackgroundTask(Handler messageHandler) {
         this.messageHandler = messageHandler;
@@ -22,24 +32,34 @@ public abstract class BackgroundTask implements Runnable {
     @Override
     public void run() {
         try {
-            runTask();
+            performTask();
         } catch (Exception ex) {
-            Log.e(LOG_TAG, ex.getMessage(), ex);
+            Log.e(getLogTag(), ex.getMessage(), ex);
             sendExceptionMessage(ex);
         }
     }
 
-    // This method is public instead of protected to make it accessible to test cases
-    public void sendSuccessMessage() {
-        Bundle msgBundle = new Bundle();
-        msgBundle.putBoolean(SUCCESS_KEY, true);
-        loadSuccessBundle(msgBundle);
-        sendMessage(msgBundle);
+    /**
+     * Returns an instance of {@link ServerFacade}. Allows mocking of the ServerFacade class for
+     * testing purposes. All usages of ServerFacade should get their instance from this method to
+     * allow for proper mocking.
+     *
+     * @return the instance.
+     */
+    public ServerFacade getServerFacade() {
+        if(serverFacade == null) {
+            serverFacade = new ServerFacade();
+        }
+
+        return new ServerFacade();
     }
 
-    // To be overridden by each task to add information to the bundle
-    protected void loadSuccessBundle(Bundle msgBundle) {
-        // By default, do nothing
+    // This method is public instead of protected to make it accessible to test cases
+    public void sendSuccessMessage() {
+        Message msg = Message.obtain();
+        msg.setData(constructSuccessBundle());
+
+        messageHandler.sendMessage(msg);
     }
 
     // This method is public instead of protected to make it accessible to test cases
@@ -47,7 +67,11 @@ public abstract class BackgroundTask implements Runnable {
         Bundle msgBundle = new Bundle();
         msgBundle.putBoolean(SUCCESS_KEY, false);
         msgBundle.putString(MESSAGE_KEY, message);
-        sendMessage(msgBundle);
+
+        Message msg = Message.obtain();
+        msg.setData(msgBundle);
+
+        messageHandler.sendMessage(msg);
     }
 
     // This method is public instead of protected to make it accessible to test cases
@@ -55,15 +79,14 @@ public abstract class BackgroundTask implements Runnable {
         Bundle msgBundle = new Bundle();
         msgBundle.putBoolean(SUCCESS_KEY, false);
         msgBundle.putSerializable(EXCEPTION_KEY, exception);
-        sendMessage(msgBundle);
-    }
 
-    private void sendMessage(Bundle msgBundle) {
         Message msg = Message.obtain();
         msg.setData(msgBundle);
 
         messageHandler.sendMessage(msg);
     }
 
-    protected abstract void runTask();
+    protected FakeData getFakeData() {
+        return FakeData.getInstance();
+    }
 }
