@@ -198,8 +198,8 @@ public class UserService {
         void getFollowersCountSuccess(int followerCount);
         void getFollowersCountFailure(String message);
 
-        void getFolloweesCountSuccess(int followeesCount);
-        void getFolloweesCountFailure(String message);
+        void getFollowingCountSuccess(int followeesCount);
+        void getFollowingCountFailure(String message);
     }
 
     public void updateFollowingAndFollowers(AuthToken authToken,
@@ -232,13 +232,13 @@ public class UserService {
             boolean success = msg.getData().getBoolean(GetFollowingCountTask.SUCCESS_KEY);
             if (success) {
                 int count = msg.getData().getInt(GetFollowingCountTask.COUNT_KEY);
-                observer.getFolloweesCountSuccess(count);
+                observer.getFollowingCountSuccess(count);
             } else if (msg.getData().containsKey(GetFollowingCountTask.MESSAGE_KEY)) {
                 String message = msg.getData().getString(GetFollowingCountTask.MESSAGE_KEY);
-                observer.getFolloweesCountFailure( "Failed to get following count: " + message);
+                observer.getFollowingCountFailure( "Failed to get following count: " + message);
             } else if (msg.getData().containsKey(GetFollowingCountTask.EXCEPTION_KEY)) {
                 Exception ex = (Exception) msg.getData().getSerializable(GetFollowingCountTask.EXCEPTION_KEY);
-                observer.getFolloweesCountFailure( "Failed to get following count because of exception: " + ex.getMessage());
+                observer.getFollowingCountFailure( "Failed to get following count because of exception: " + ex.getMessage());
             }
         }
     }

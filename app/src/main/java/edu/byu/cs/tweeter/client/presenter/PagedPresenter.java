@@ -43,6 +43,10 @@ public abstract class PagedPresenter<T> extends BasePresenter implements GetUser
         return hasMorePages;
     }
 
+    public T getLastItem() {
+        return lastItem;
+    }
+
     public void loadMoreItems() {
         if (!isLoading) {   // This guard is important for avoiding a race condition in the scrolling code.
             isLoading = true;

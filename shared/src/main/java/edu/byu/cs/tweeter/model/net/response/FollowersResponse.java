@@ -64,4 +64,15 @@ public class FollowersResponse extends PagedResponse {
     public int hashCode() {
         return Objects.hash(followers);
     }
+
+    public String getAliasString() {
+        String s = "";
+        for (User follower : followers) {
+            s += follower.getAlias();
+            if(follower != followers.get(followers.size()-1)){
+                s += ", ";
+            }
+        }
+        return s;
+    }
 }

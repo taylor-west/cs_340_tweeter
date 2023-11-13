@@ -2,9 +2,16 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.IOException;
+
+import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.GetUserRequest;
+import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
 
 /**
  * Background task that returns the profile for a specified user.
@@ -28,23 +35,20 @@ public class GetUserTask extends AuthenticatedTask {
     }
 
     public void performTask() {
+        try {
+            GetUserRequest request = new GetUserRequest(authToken, alias);
+            GetUserResponse response = getServerFacade().getUser(request, UserService.getGetUserUrlPath(alias));
 
-        //        try {
-//            _______Request request = new _______Request(...);
-//            _______Response response = getServerFacade().__________(request, _______Service.URL_PATH);
-
-//            if (response.isSuccess()) {
-//                this.followees = response.getFollowees();
-//                this.hasMorePages = response.getHasMorePages();
-                    this.user = getFakeData().findUserByAlias(alias);
-                    sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to get followees", ex);
-//            sendExceptionMessage(ex);
-//        }
+            if (response.isSuccess()) {
+                this.user = response.getUser();
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to get user", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     private User getUser() {

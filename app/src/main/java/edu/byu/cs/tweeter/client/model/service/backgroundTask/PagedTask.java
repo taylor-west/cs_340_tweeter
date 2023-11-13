@@ -11,10 +11,11 @@ public abstract class PagedTask<T> extends AuthenticatedTask {
     public static final String MORE_PAGES_KEY = "more-pages";
 
     /**
-     * The user whose following is being retrieved.
+     * The user whose followers/following is being retrieved.
      * (This can be any user, not just the currently logged-in user.)
      */
     protected User targetUser;
+
     /**
      * Maximum number of items to return (i.e., page size).
      */

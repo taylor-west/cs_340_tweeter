@@ -11,14 +11,15 @@ public class FeedPresenter extends PagedPresenter<Status> implements GetUserObse
     public interface FeedView extends PagedView<Status> {
     }
 
-    public FeedPresenter(View view, User user) {
+    public FeedPresenter(View view, User user, AuthToken authToken) {
         this.view = view;
         this.targetUser = user;
+        this.authToken = authToken;
     }
 
-    protected void getItems(AuthToken authToken, User targerUser, int pageSize, Status lastItem) {
+    protected void getItems(AuthToken authToken, User user, int pageSize, Status lastStatus) {
 //        this.statusService = getStatusService();
         StatusService statusService = new StatusService();
-        statusService.getFeed(authToken, targetUser, PAGE_SIZE, (Status) lastItem, this);
+        statusService.getFeed(authToken, user, pageSize, (Status) lastStatus, this);
     }
 }

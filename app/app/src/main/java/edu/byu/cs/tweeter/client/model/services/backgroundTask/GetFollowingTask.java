@@ -60,7 +60,7 @@ public class GetFollowingTask implements Runnable {
     @Override
     public void run() {
         try {
-            Pair<List<User>, Boolean> pageOfUsers = getFollowees();
+            Pair<List<User>, Boolean> pageOfUsers = getFollowing();
 
             List<User> followees = pageOfUsers.getFirst();
             boolean hasMorePages = pageOfUsers.getSecond();
@@ -77,7 +77,7 @@ public class GetFollowingTask implements Runnable {
         return FakeData.getInstance();
     }
 
-    private Pair<List<User>, Boolean> getFollowees() {
+    private Pair<List<User>, Boolean> getFollowing() {
         return getFakeData().getPageOfUsers((User) lastFollowee, limit, targetUser);
     }
 

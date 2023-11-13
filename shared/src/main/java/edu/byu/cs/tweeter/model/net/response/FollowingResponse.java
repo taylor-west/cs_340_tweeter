@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.model.net.response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,12 +27,15 @@ public class FollowingResponse extends PagedResponse {
     /**
      * Creates a response indicating that the corresponding request was successful.
      *
-     * @param followees the followees to be included in the result.
+     * @param followees    the followees to be included in the result.
      * @param hasMorePages an indicator of whether more data is available for the request.
      */
     public FollowingResponse(List<User> followees, boolean hasMorePages) {
         super(true, hasMorePages);
         this.followees = followees;
+
+        System.out.println("new FollowingResponse is being constructed with followers: " + getAliasString());
+
     }
 
     /**
@@ -39,7 +43,7 @@ public class FollowingResponse extends PagedResponse {
      *
      * @return the followees.
      */
-    public List<User> getFollowees() {
+    public List<User> getFollowing() {
         return followees;
     }
 
@@ -63,5 +67,24 @@ public class FollowingResponse extends PagedResponse {
     @Override
     public int hashCode() {
         return Objects.hash(followees);
+    }
+
+    public String getAliasString() {
+        String s = "";
+        for (User followee : followees) {
+            s += followee.getAlias();
+            if(followee != followees.get(followees.size()-1)){
+                s += ", ";
+            }
+        }
+        return s;
+    }
+
+    public List<User> getFollowees() {
+        return followees;
+    }
+
+    public void setFollowees(List<User> followees) {
+        this.followees = followees;
     }
 }

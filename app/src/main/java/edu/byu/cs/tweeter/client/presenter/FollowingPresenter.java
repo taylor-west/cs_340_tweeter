@@ -1,9 +1,5 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import android.util.Log;
-
-import java.util.List;
-
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.presenter.observers.PagedObserver;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -12,7 +8,7 @@ import edu.byu.cs.tweeter.model.domain.User;
 /**
  * The presenter for the "following"/followees functionality of the application.
  */
-public class FollowingPresenter extends PagedPresenter<User> implements PagedObserver<User> {
+public class FollowingPresenter extends PagedPresenter<User> implements PagedObserver<User>{
 
     private static final String LOG_TAG = "FollowingPresenter";
     public static final int PAGE_SIZE = 10;
@@ -103,7 +99,7 @@ public class FollowingPresenter extends PagedPresenter<User> implements PagedObs
      * @param lastFollowee the last followee returned in the previous request (can be null).
      */
     public void getItems(AuthToken authToken, User targetUser, int pageSize, User lastFollowee) {
-        getFolloweesService().getFollowees(authToken, targetUser, pageSize, lastFollowee, this);
+        getFollowingService().getFollowing(authToken, targetUser, pageSize, lastFollowee, this);
     }
 
     /**
@@ -113,7 +109,7 @@ public class FollowingPresenter extends PagedPresenter<User> implements PagedObs
      *
      * @return the instance.
      */
-    public FollowService getFolloweesService() {
+    public FollowService getFollowingService() {
         if(followService == null) {
             followService = new FollowService();
         }

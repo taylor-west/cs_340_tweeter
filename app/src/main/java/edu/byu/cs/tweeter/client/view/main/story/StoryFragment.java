@@ -77,7 +77,7 @@ public class StoryFragment extends Fragment implements StoryPresenter.StoryView 
 
         //noinspection ConstantConditions
         user = (User) getArguments().getSerializable(USER_KEY);
-        presenter = new StoryPresenter(this, user);
+        presenter = new StoryPresenter(this, user, Cache.getInstance().getCurrUserAuthToken());
 
         RecyclerView storyRecyclerView = view.findViewById(R.id.storyRecyclerView);
 

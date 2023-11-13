@@ -2,8 +2,15 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.IOException;
+
+import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.LogoutRequest;
+import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
 
 /**
  * Background task that logs out a user (i.e., ends a session).
@@ -18,21 +25,19 @@ public class LogoutTask extends AuthenticatedTask {
     }
 
     public void performTask() {
-//        try {
-//            _______Request request = new _______Request(...);
-//            _______Response response = getServerFacade().__________(request, _______Service.URL_PATH);
+        try {
+            LogoutRequest request = new LogoutRequest(authToken);
+            LogoutResponse response = getServerFacade().logout(request, UserService.getLogoutUrlPath());
 
-//            if (response.isSuccess()) {
-//                this.followees = response.getFollowees();
-//                this.hasMorePages = response.getHasMorePages();
-        sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to get followees", ex);
-//            sendExceptionMessage(ex);
-//        }
+            if (response.isSuccess()) {
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to logout", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     protected Bundle constructSuccessBundle() {

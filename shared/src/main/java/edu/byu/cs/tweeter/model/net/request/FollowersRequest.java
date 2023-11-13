@@ -105,4 +105,14 @@ public class FollowersRequest {
     public void setLastFollowerAlias(String lastFollowerAlias) {
         this.lastFollowerAlias = lastFollowerAlias;
     }
+
+    @Override
+    public String toString() {
+        return "FollowersRequest{" +
+                "authToken=" + authToken.toString() +
+                ", followeeAlias='" + followeeAlias + '\'' +
+                ", limit=" + limit +
+                ", lastFollowerAlias='" + lastFollowerAlias + '\'' +
+                '}';
+    }
 }

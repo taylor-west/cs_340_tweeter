@@ -14,31 +14,14 @@ import edu.byu.cs.tweeter.model.domain.User;
 
 public class StatusService {
 //    public static final String URL_PATH = "/status";
-//    public static final String FEED_URL_PATH = "/feed";
-//    public static final String POST_STATUS_URL_PATH = "/poststatus";
-//    public static final String STORY_URL_PATH = "/story";
+    public static final String FEED_URL_PATH = "/status/feed";
+    public static final String POST_STATUS_URL_PATH = "/status/post";
+    public static final String STORY_URL_PATH = "/status/story";
 
     /**
      * Creates an instance.
      */
     public StatusService() {}
-
-    /**
-     * Requests the feed for the user specified in the request.
-     * Limits the number of statuses returned and returns the next set of
-     * statuses after any that were returned in a previous request.
-     * This is an asynchronous operation.
-     *
-     * @param authToken the session auth token.
-     * @param user the user for whom the feed is being retrieved.
-     * @param pageSize the maximum number of statuses to return.
-     * @param lastStatus the last status returned in the previous request (can be null).
-     */
-    public void getFeed(AuthToken authToken, User user, int pageSize, Status lastStatus,
-                        PagedObserver<Status> observer) {
-        GetFeedTask getFeedTask = getGetFeedTask(authToken, user, pageSize, lastStatus, observer);
-        BackgroundTaskUtils.runTask(getFeedTask);
-    }
 
     /**
      * Requests the story for the user specified in the request.
@@ -57,10 +40,40 @@ public class StatusService {
         BackgroundTaskUtils.runTask(getStoryTask);
     }
 
+    public static String getStoryUrl(String userAlias){
+        return STORY_URL_PATH + "/" + userAlias;
+    }
+
     public void postStatus(AuthToken currUserAuthToken, User user, Status newStatus,
                            PostStatusObserver observer) {
         PostStatusTask postStatusTask = getPostStatusTask(currUserAuthToken, user, newStatus, observer);
         BackgroundTaskUtils.runTask(postStatusTask);
+    }
+
+    public static String getPostStatusUrlPath(String userAlias){
+        return POST_STATUS_URL_PATH + "/" + userAlias;
+    }
+
+
+    /**
+     * Requests the feed for the user specified in the request.
+     * Limits the number of statuses returned and returns the next set of
+     * statuses after any that were returned in a previous request.
+     * This is an asynchronous operation.
+     *
+     * @param authToken the session auth token.
+     * @param user the user for whom the feed is being retrieved.
+     * @param pageSize the maximum number of statuses to return.
+     * @param lastStatus the last status returned in the previous request (can be null).
+     */
+    public void getFeed(AuthToken authToken, User user, int pageSize, Status lastStatus,
+                        PagedObserver<Status> observer) {
+        GetFeedTask getFeedTask = getGetFeedTask(authToken, user, pageSize, lastStatus, observer);
+        BackgroundTaskUtils.runTask(getFeedTask);
+    }
+
+    public static String getGetFeedUrlPath(String userAlias){
+        return FEED_URL_PATH + "/" + userAlias;
     }
 
 

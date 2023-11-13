@@ -40,20 +40,20 @@ public class FollowServiceTest {
         // Setup a mock FollowDAO that will return known responses
         expectedResponse = new FollowingResponse(Arrays.asList(resultUser1, resultUser2, resultUser3), false);
         mockFollowDAO = Mockito.mock(FollowDAO.class);
-        Mockito.when(mockFollowDAO.getFollowees(request.getFollowerAlias(), request.getLimit(), request.getLastFolloweeAlias()))
-                .thenReturn(new Pair<>(expectedResponse.getFollowees(), expectedResponse.getHasMorePages()));
+        Mockito.when(mockFollowDAO.getFollowing(request.getFollowerAlias(), request.getLimit(), request.getLastFolloweeAlias()))
+                .thenReturn(new Pair<>(expectedResponse.getFollowing(), expectedResponse.getHasMorePages()));
 
         followServiceSpy = Mockito.spy(FollowService.class);
-        Mockito.when(followServiceSpy.getFollowingDAO()).thenReturn(mockFollowDAO);
+        Mockito.when(followServiceSpy.getFollowDAO()).thenReturn(mockFollowDAO);
     }
 
     /**
-     * Verify that the {@link FollowService#getFollowees(FollowingRequest)}
+     * Verify that the {@link FollowService#getFollowing(FollowingRequest)}
      * method returns the same result as the {@link FollowDAO} class.
      */
     @Test
-    public void testGetFollowees_validRequest_correctResponse() {
-        FollowingResponse response = followServiceSpy.getFollowees(request);
+    public void testgetFollowing_validRequest_correctResponse() {
+        FollowingResponse response = followServiceSpy.getFollowing(request);
         Assertions.assertEquals(expectedResponse, response);
     }
 }

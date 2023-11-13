@@ -49,7 +49,7 @@ public class IsFollowerTask implements Runnable {
     public void run() {
         try {
 
-            sendSuccessMessage(new Random().nextInt() > 0);
+            sendSuccessMessage();
 
         } catch (Exception ex) {
             Log.e(LOG_TAG, ex.getMessage(), ex);

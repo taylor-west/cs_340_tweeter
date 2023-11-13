@@ -106,4 +106,13 @@ public class FollowingRequest {
     public void setLastFolloweeAlias(String lastFolloweeAlias) {
         this.lastFolloweeAlias = lastFolloweeAlias;
     }
+
+    @Override
+    public String toString() {
+        return "FollowingRequest{" +
+                "followerAlias='" + followerAlias + '\'' +
+                ", limit=" + limit +
+                ", lastFolloweeAlias='" + lastFolloweeAlias + '\'' +
+                '}';
+    }
 }

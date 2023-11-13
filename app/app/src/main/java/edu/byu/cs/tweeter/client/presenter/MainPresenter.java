@@ -117,12 +117,12 @@ public class MainPresenter extends AppCompatActivity implements   //StatusDialog
     }
 
     @Override
-    public void getFolloweesCountSuccess(int followeesCount) {
+    public void getFollowingCountSuccess(int followeesCount) {
         view.setFolloweesCount(followeesCount);
     }
 
     @Override
-    public void getFolloweesCountFailure(String message) {
+    public void getFollowingCountFailure(String message) {
         view.showErrorMessage(message);
     }
 

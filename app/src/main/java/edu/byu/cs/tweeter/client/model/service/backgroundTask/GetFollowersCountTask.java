@@ -2,9 +2,16 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.IOException;
+
+import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.GetFollowersCountRequest;
+import edu.byu.cs.tweeter.model.net.response.GetFollowersCountResponse;
 
 /**
  * Background task that queries how many followers a user has.
@@ -23,22 +30,20 @@ public class GetFollowersCountTask extends GetCountTask {
     public void performTask() {
 
 
-        //        try {
-//            _______Request request = new _______Request(...);
-//            _______Response response = getServerFacade().__________(request, _______Service.URL_PATH);
+    try {
+            GetFollowersCountRequest request = new GetFollowersCountRequest(authToken, targetUser.getAlias());
+            GetFollowersCountResponse response = getServerFacade().getFollowersCount(request, FollowService.getFollowersCountUrlPath(targetUser.getAlias()));
 
-//            if (response.isSuccess()) {
-//                this.followees = response.getFollowees();
-//                this.hasMorePages = response.getHasMorePages();
-                    this.count = 20;
-                    sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to get followees", ex);
-//            sendExceptionMessage(ex);
-//        }
+            if (response.isSuccess()) {
+                this.count = response.getFollowersCount();
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to get followers count", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     protected Bundle constructSuccessBundle() {

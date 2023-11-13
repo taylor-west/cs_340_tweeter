@@ -1,13 +1,6 @@
 package edu.byu.cs.tweeter.client.presenter;
 
-import android.util.Log;
-
-import edu.byu.cs.tweeter.client.cache.Cache;
-import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.client.presenter.observers.AuthenticationObserver;
-import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
-import edu.byu.cs.tweeter.model.net.request.LoginRequest;
 
 /**
  * The presenter for the login functionality of the application.

@@ -77,7 +77,7 @@ public class FeedFragment extends Fragment implements FeedPresenter.FeedView {
 
         //noinspection ConstantConditions
         user = (User) getArguments().getSerializable(USER_KEY);
-        presenter = new FeedPresenter(this, user);
+        presenter = new FeedPresenter(this, user, Cache.getInstance().getCurrUserAuthToken());
 
         RecyclerView feedRecyclerView = view.findViewById(R.id.feedRecyclerView);
 

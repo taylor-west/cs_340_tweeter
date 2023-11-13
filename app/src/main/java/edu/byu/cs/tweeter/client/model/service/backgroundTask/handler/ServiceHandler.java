@@ -32,7 +32,7 @@ abstract class ServiceHandler<T extends ServiceObserver> extends Handler {
             this.observer.handleFailure("Failed to " + taskDescription + ": " + message);
         } else if (msg.getData().containsKey(BackgroundTask.EXCEPTION_KEY)) {
             Exception ex = (Exception) msg.getData().getSerializable(BackgroundTask.EXCEPTION_KEY);
-            this.observer.handleExceptions("Failed to" + taskDescription + "because of exception: " + ex.getMessage());
+            this.observer.handleExceptions("Failed to " + taskDescription + " because of exception: " + ex.getMessage());
         }
     }
 }

@@ -2,9 +2,16 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.IOException;
+
+import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
+import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
 import edu.byu.cs.tweeter.util.Pair;
 
 /**
@@ -42,28 +49,21 @@ public class RegisterTask extends AuthenticateTask {
     }
 
     public void performTask() {
-        Pair<User, AuthToken> registerResult = doRegister();
+        try {
+            RegisterRequest request = new RegisterRequest(alias, password, firstName, lastName, image);
+            RegisterResponse response = getServerFacade().register(request, UserService.getRegisterUrlPath());
 
-        this.registeredUser = registerResult.getFirst();
-        this.registeredAuthToken = registerResult.getSecond();
-
-        sendSuccessMessage();
-
-        //        try {
-//            _______Request request = new _______Request(...);
-//            _______Response response = getServerFacade().__________(request, _______Service.URL_PATH);
-
-//            if (response.isSuccess()) {
-//                this.followees = response.getFollowees();
-//                this.hasMorePages = response.getHasMorePages();
-        sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to get followees", ex);
-//            sendExceptionMessage(ex);
-//        }
+            if (response.isSuccess()) {
+                this.registeredUser = response.getUser();
+                this.registeredAuthToken = response.getAuthToken();
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to get followees", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     private Pair<User, AuthToken> doRegister() {

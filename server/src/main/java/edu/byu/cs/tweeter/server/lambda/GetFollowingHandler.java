@@ -1,5 +1,5 @@
 package edu.byu.cs.tweeter.server.lambda;
-
+// ROUTES CALLS THAT THE CLIENT MAKES TO API GATEWAY TO SERVER.SERVICE FUNCTIONS
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
@@ -23,7 +23,10 @@ public class GetFollowingHandler implements RequestHandler<FollowingRequest, Fol
      */
     @Override
     public FollowingResponse handleRequest(FollowingRequest request, Context context) {
+        System.out.println("GetFollowingHandler has received a request: " + request.toString());
         FollowService service = new FollowService();
-        return service.getFollowees(request);
+        FollowingResponse response = service.getFollowing(request);
+        System.out.println("GetFollowingHandler.handleRequest returning response with followers: " + response.getAliasString());
+        return response;
     }
 }

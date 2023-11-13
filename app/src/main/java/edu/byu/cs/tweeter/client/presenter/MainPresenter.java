@@ -110,7 +110,7 @@ public class MainPresenter extends BasePresenter implements
     }
 
     @Override
-    public void getFolloweesCountSuccess(int followeesCount) {
+    public void getFollowingCountSuccess(int followeesCount) {
         getView().setFolloweesCount(followeesCount);
     }
     ////////////////

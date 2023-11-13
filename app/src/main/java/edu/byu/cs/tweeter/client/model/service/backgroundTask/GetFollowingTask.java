@@ -8,21 +8,19 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
-import edu.byu.cs.tweeter.client.model.net.ServerFacade;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
-import edu.byu.cs.tweeter.util.Pair;
 
 /**
  * Background task that retrieves a page of other users being followed by a specified user.
  */
-public class GetFolloweesTask extends PagedTask<User> {
+public class GetFollowingTask extends PagedTask<User> {
 
-    private static final String LOG_TAG = "GetFolloweesTask";
+    private static final String LOG_TAG = "GetFollowingTask";
 
     public static final String FOLLOWEES_KEY = "followees";
 //    public static final String MORE_PAGES_KEY = "more-pages";
@@ -41,7 +39,7 @@ public class GetFolloweesTask extends PagedTask<User> {
      */
     private boolean hasMorePages;
 
-    public GetFolloweesTask(AuthToken authToken, User targetUser,
+    public GetFollowingTask(AuthToken authToken, User targetUser,
                             int limit, User lastFollowee, Handler messageHandler) {
         super(messageHandler);
 
@@ -53,27 +51,24 @@ public class GetFolloweesTask extends PagedTask<User> {
 
     @Override
     public void performTask() {
-//        try {
-//            String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
-//            String lastFolloweeAlias = lastFollowee == null ? null : lastItem.getAlias();
-//
-//            FollowingRequest request = new FollowingRequest(authToken, targetUserAlias, limit, lastFolloweeAlias);
-//            FollowingResponse response = getServerFacade().getFollowees(request, FollowService.URL_PATH);
-//
-//            if (response.isSuccess()) {
-//                this.followees = response.getFollowees();
-//                this.hasMorePages = response.getHasMorePages();
-                Pair<List<User>, Boolean> pageOfItems =  getFakeData().getPageOfUsers((User) lastItem, limit, targetUser);
-                this.followees = pageOfItems.getFirst();
-                this.hasMorePages = pageOfItems.getSecond();
+        try {
+            String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
+            String lastFolloweeAlias = lastItem == null ? null : lastItem.getAlias();
+
+            FollowingRequest request = new FollowingRequest(authToken, targetUserAlias, limit, lastFolloweeAlias);
+            FollowingResponse response = getServerFacade().getFollowing(request, FollowService.getFollowingUrlPath(targetUserAlias));
+
+            if (response.isSuccess()) {
+                this.followees = response.getFollowing();
+                this.hasMorePages = response.getHasMorePages();
                 sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to get followees", ex);
-//            sendExceptionMessage(ex);
-//        }
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to get followees", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     protected Bundle constructSuccessBundle() {

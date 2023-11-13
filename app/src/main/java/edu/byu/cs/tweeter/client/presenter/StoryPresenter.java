@@ -9,9 +9,10 @@ public class StoryPresenter extends PagedPresenter<Status> implements PagedObser
     public interface StoryView extends PagedView<Status> {
     }
 
-    public StoryPresenter(View view, User user) {
+    public StoryPresenter(View view, User user, AuthToken authToken) {
         this.view = view;
         this.targetUser = user;
+        this.authToken = authToken;
     }
 
     protected void getItems(AuthToken authToken, User targerUser, int pageSize, Status lastItem) {

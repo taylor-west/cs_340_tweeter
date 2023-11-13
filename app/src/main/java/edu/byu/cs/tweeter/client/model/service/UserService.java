@@ -1,15 +1,15 @@
 package edu.byu.cs.tweeter.client.model.service;
 
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.BackgroundTaskUtils;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFolloweesCountTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowersCountTask;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetFollowingCountTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.GetUserTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.LoginTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.LogoutTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.RegisterTask;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.AuthenticationHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.GetFollowersCountHandler;
-import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.GetFolloweesCountHandler;
+import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.GetFollowingCountHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.GetUserHandler;
 import edu.byu.cs.tweeter.client.model.service.backgroundTask.handler.LogoutHandler;
 import edu.byu.cs.tweeter.client.presenter.observers.AuthenticationObserver;
@@ -24,11 +24,11 @@ import edu.byu.cs.tweeter.model.domain.User;
  */
 public class UserService {
 
-    public static final String URL_PATH = "/login";
-//    public static final String LOGIN_URL_PATH = "/login";
-//    public static final String REGISTER_URL_PATH = "/register";
-//    public static final String USER_URL_PATH = "/user";
-//    public static final String LOGOUT_URL_PATH = "/logout";
+//    public static final String URL_PATH = "/login";
+    public static final String LOGIN_URL_PATH = "/login";
+    public static final String REGISTER_URL_PATH = "/register";
+    public static final String USER_URL_PATH = "/user";
+    public static final String LOGOUT_URL_PATH = "/logout";
 //    public static final String UPDATE_FOLLOWERS_FOLLOWING_URL_PATH = "/followersfollowing";
 
 //    /**
@@ -48,6 +48,7 @@ public class UserService {
      public UserService() {
      }
 
+
     /**
      * Makes an asynchronous login request.
      *
@@ -59,6 +60,9 @@ public class UserService {
         BackgroundTaskUtils.runTask(loginTask);
     }
 
+    public static String getLoginUrlPath(){
+        return LOGIN_URL_PATH;
+    }
 
     /**
      * Returns an instance of {@link LoginTask}. Allows mocking of the LoginTask class for
@@ -86,6 +90,10 @@ public class UserService {
         BackgroundTaskUtils.runTask(registerTask);
     }
 
+    public static String getRegisterUrlPath(){
+        return REGISTER_URL_PATH;
+    }
+
     /**
      * Returns an instance of {@link RegisterTask}. Allows mocking of the RegisterTask class for
      * testing purposes. All usages of RegisterTask should get their instance from this method to
@@ -109,6 +117,10 @@ public class UserService {
         BackgroundTaskUtils.runTask(getUserTask);
     }
 
+    public static String getGetUserUrlPath(String userAlias) {
+        return USER_URL_PATH + "/" + userAlias;
+    }
+
     /**
      * Returns an instance of {@link GetUserTask}. Allows mocking of the GetUserTask class for
      * testing purposes. All usages of GetUserTask should get their instance from this method to
@@ -129,6 +141,10 @@ public class UserService {
         BackgroundTaskUtils.runTask(logoutTask);
     }
 
+    public static String getLogoutUrlPath() {
+        return LOGOUT_URL_PATH;
+    }
+
     /**
      * Returns an instance of {@link LogoutTask}. Allows mocking of the LogoutTask class for
      * testing purposes. All usages of LogoutTask should get their instance from this method to
@@ -147,7 +163,7 @@ public class UserService {
         BackgroundTaskUtils.runTask(followersCountTask);
 
         // Get count of most recently selected user's followees (who they are following)
-        GetFolloweesCountTask followeesCountTask = getGetFolloweesCountTask(authToken, user, observer);
+        GetFollowingCountTask followeesCountTask = getGetFollowingCountTask(authToken, user, observer);
         BackgroundTaskUtils.runTask(followeesCountTask);
 
     }
@@ -164,13 +180,13 @@ public class UserService {
     }
 
     /**
-     * Returns an instance of {@link GetFolloweesCountTask}. Allows mocking of the GetFollowGetFolloweesCountTaskingCountTask class for
-     * testing purposes. All usages of GetFolloweesCountTask should get their instance from this method to
+     * Returns an instance of {@link GetFollowingCountTask}. Allows mocking of the GetFollowgetFollowingCountTaskingCountTask class for
+     * testing purposes. All usages of getFollowingCountTask should get their instance from this method to
      * allow for proper mocking.
      *
      * @return the instance.
      */
-    GetFolloweesCountTask getGetFolloweesCountTask(AuthToken authToken, User user, UpdateFolloweesAndFollowersObserver observer){
-        return new GetFolloweesCountTask(authToken, user, new GetFolloweesCountHandler(observer, "get followees count"));
+    GetFollowingCountTask getGetFollowingCountTask(AuthToken authToken, User user, UpdateFolloweesAndFollowersObserver observer){
+        return new GetFollowingCountTask(authToken, user, new GetFollowingCountHandler(observer, "get followees count"));
     }
 }

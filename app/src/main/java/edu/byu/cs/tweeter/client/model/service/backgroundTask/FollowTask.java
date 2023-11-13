@@ -8,10 +8,9 @@ import java.io.IOException;
 
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
-import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
-import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
+import edu.byu.cs.tweeter.model.net.request.FollowRequest;
+import edu.byu.cs.tweeter.model.net.response.FollowResponse;
 
 /**
  * Background task that establishes a following relationship between two users.
@@ -22,36 +21,36 @@ public class FollowTask extends AuthenticatedTask {
     private static final String FOLLOWEE_TAG = "followee";
 
     /**
-     * The user that is being followed.
+     * The alias of the followee (user that is being followed).
      */
-    private User followee;
+    private String followeeAlias;
     /**
-     * The user that will follow the followee
+     * The alias of the follower (user that will follow the followee).
      */
-    private User follower;
+    private String followerAlias;
 
-    public FollowTask(AuthToken authToken, User follower, User followee, Handler messageHandler) {
+    public FollowTask(AuthToken authToken, String followerAlias, String followeeAlias, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.follower = follower;
-        this.followee = followee;
+        this.followerAlias = followerAlias;
+        this.followeeAlias = followeeAlias;
     }
 
     public void performTask() {
-//        try {
-//            FollowRequest request = new FollowRequest(follower, followee);
-//            FollowResponse response = getServerFacade().follow(request, FollowService.URL_PATH);
+        try {
+            FollowRequest request = new FollowRequest(followerAlias, followeeAlias);
+            FollowResponse response = getServerFacade().follow(request, FollowService.getFollowUrlPath(followerAlias, followeeAlias));
 
-//            if (response.isSuccess()) {
+            if (response.isSuccess()) {
                     sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to follow user", ex);
-//            sendExceptionMessage(ex);
-//        }
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to follow user", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     protected Bundle constructSuccessBundle() {

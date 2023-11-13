@@ -2,10 +2,17 @@ package edu.byu.cs.tweeter.client.model.service.backgroundTask;
 
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 
+import java.io.IOException;
+
+import edu.byu.cs.tweeter.client.model.service.StatusService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
+import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
+import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
 
 /**
  * Background task that posts a new status sent by a user.
@@ -25,19 +32,19 @@ public class PostStatusTask extends AuthenticatedTask {
     }
 
     public void performTask() {
-//        try {
-//            PostStatusRequest request = new PostStatusRequest(user, status);
-//            PostStatusResponse response = getServerFacade().postStatus(request, StatusService.URL_PATH);
+        try {
+            PostStatusRequest request = new PostStatusRequest(authToken, user.getAlias(), status);
+            PostStatusResponse response = getServerFacade().postStatus(request, StatusService.getPostStatusUrlPath(user.getAlias()));
 
-//            if (response.isSuccess()) {
-        sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (IOException | TweeterRemoteException ex) {
-//            Log.e(LOG_TAG, "Failed to post status", ex);
-//            sendExceptionMessage(ex);
-//        }
+            if (response.isSuccess()) {
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (IOException | TweeterRemoteException ex) {
+            Log.e(LOG_TAG, "Failed to post status", ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     protected Bundle constructSuccessBundle() {

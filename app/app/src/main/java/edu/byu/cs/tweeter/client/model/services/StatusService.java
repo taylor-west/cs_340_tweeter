@@ -66,6 +66,7 @@ public class StatusService {
     }
 
     public void getStory(AuthToken authToken, User user, int pageSize, Status lastStatus, GetStoryObserver observer){
+        String test = "test";
         GetStoryTask getStoryTask = new GetStoryTask(authToken, user, pageSize,
                 lastStatus, new GetStoryHandler(observer));
         ExecutorService executor = Executors.newSingleThreadExecutor();

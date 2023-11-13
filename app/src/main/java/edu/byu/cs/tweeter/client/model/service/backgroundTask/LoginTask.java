@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
-import edu.byu.cs.tweeter.client.model.net.ServerFacade;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
@@ -50,24 +49,21 @@ public class LoginTask extends AuthenticateTask {
 
     @Override
     protected void performTask() {
-//        try {
-//            LoginRequest request = new LoginRequest(alias, password);
-//            LoginResponse response = getServerFacade().login(request, UserService.URL_PATH);
-//
-//            if (response.isSuccess()) {
-//                this.loggedInUser = response.getUser();
-//                this.loggedInAuthToken = response.getAuthToken();
-                this.loggedInUser = getFakeData().getFirstUser();
-                this.loggedInAuthToken = getFakeData().getAuthToken();
-                sendSuccessMessage();
-//            } else {
-//                sendFailedMessage(response.getMessage());
-//            }
-//        } catch (Exception ex) {
-//            Log.e(LOG_TAG, ex.getMessage(), ex);
-//            sendExceptionMessage(ex);
-//        }
+        try {
+            LoginRequest request = new LoginRequest(alias, password);
+            LoginResponse response = getServerFacade().login(request, UserService.getLoginUrlPath());
 
+            if (response.isSuccess()) {
+                this.loggedInUser = response.getUser();
+                this.loggedInAuthToken = response.getAuthToken();
+                sendSuccessMessage();
+            } else {
+                sendFailedMessage(response.getMessage());
+            }
+        } catch (Exception ex) {
+            Log.e(LOG_TAG, ex.getMessage(), ex);
+            sendExceptionMessage(ex);
+        }
     }
 
     protected Bundle constructSuccessBundle() {
