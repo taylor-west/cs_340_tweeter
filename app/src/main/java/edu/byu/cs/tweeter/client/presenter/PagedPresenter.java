@@ -6,6 +6,7 @@ import android.text.style.URLSpan;
 
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.client.presenter.observers.GetUserObserver;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
@@ -28,7 +29,7 @@ public abstract class PagedPresenter<T> extends BasePresenter implements GetUser
         void navigateToUser(User user);
     }
 
-    protected abstract void getItems(AuthToken authToken, User targerUser, int pageSize, T lastItem);
+    protected abstract void getItems(AuthToken authToken, User currUser, User targerUser, int pageSize, T lastItem);
 
 
     protected PagedView<T> getView() {
@@ -51,7 +52,7 @@ public abstract class PagedPresenter<T> extends BasePresenter implements GetUser
         if (!isLoading) {   // This guard is important for avoiding a race condition in the scrolling code.
             isLoading = true;
             getView().setLoading(true);
-            getItems(authToken, targetUser, PAGE_SIZE, lastItem);
+            getItems(authToken, Cache.getInstance().getCurrUser(), targetUser, PAGE_SIZE, lastItem);
         }
     }
 
@@ -67,7 +68,7 @@ public abstract class PagedPresenter<T> extends BasePresenter implements GetUser
         view.showInfoMessage("Getting user's profile...");
 
         var userService = new UserService();
-        userService.getUser(authToken, alias, this);
+        userService.getUser(authToken, Cache.getInstance().getCurrUser(), alias, this);
     }
 
     public void getUserSucceeded(User user) {

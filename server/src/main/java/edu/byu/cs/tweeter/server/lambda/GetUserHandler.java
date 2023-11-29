@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import edu.byu.cs.tweeter.model.net.request.GetUserRequest;
 import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
+import edu.byu.cs.tweeter.server.dao.factories.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.UserService;
 
 /**
@@ -14,7 +15,7 @@ public class GetUserHandler implements RequestHandler<GetUserRequest, GetUserRes
     @Override
     public GetUserResponse handleRequest(GetUserRequest getUserRequest, Context context) {
         System.out.println("GetUserHandler has received a request: " + getUserRequest.toString());
-        UserService userService = new UserService();
+        UserService userService = new UserService(new DynamoDAOFactory());
         GetUserResponse response = userService.getUser(getUserRequest);
         System.out.println("GetUserHandler.handleRequest is returning a response: " + response.toString());
         return response;

@@ -20,10 +20,11 @@ public class GetFollowersCountTask extends GetCountTask {
     private static final String LOG_TAG = "GetFollowersCountTask";
     private int count;
 
-    public GetFollowersCountTask(AuthToken authToken, User targetUser, Handler messageHandler) {
+    public GetFollowersCountTask(AuthToken authToken, User currUser, User targetUser, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
+        this.currUser = currUser;
         this.targetUser = targetUser;
     }
 
@@ -31,7 +32,10 @@ public class GetFollowersCountTask extends GetCountTask {
 
 
     try {
-            GetFollowersCountRequest request = new GetFollowersCountRequest(authToken, targetUser.getAlias());
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
+            String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
+
+            GetFollowersCountRequest request = new GetFollowersCountRequest(authToken, currUserAlias, targetUserAlias);
             GetFollowersCountResponse response = getServerFacade().getFollowersCount(request, FollowService.getFollowersCountUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {

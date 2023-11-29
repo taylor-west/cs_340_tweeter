@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
 import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
+import edu.byu.cs.tweeter.server.dao.factories.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.UserService;
 
 /**
@@ -14,7 +15,7 @@ import edu.byu.cs.tweeter.server.service.UserService;
 public class RegisterHandler implements RequestHandler<RegisterRequest, RegisterResponse> {
     @Override
     public RegisterResponse handleRequest(RegisterRequest registerRequest, Context context) {
-        UserService userService = new UserService();
+        UserService userService = new UserService(new DynamoDAOFactory());
         System.out.println("LoginHandler has received a request: " + registerRequest.toString());
         return userService.register(registerRequest);
     }

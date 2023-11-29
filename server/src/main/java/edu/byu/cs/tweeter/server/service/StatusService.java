@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.server.service;
 // RECEIVES CALLS FROM THE LAMBDA (SERVER.HANDLERS) AND RETURNS FAKE DATA
+
 import java.util.List;
 
 import edu.byu.cs.tweeter.model.domain.Status;
@@ -9,53 +10,53 @@ import edu.byu.cs.tweeter.model.net.request.PostStatusRequest;
 import edu.byu.cs.tweeter.model.net.response.GetFeedResponse;
 import edu.byu.cs.tweeter.model.net.response.GetStoryResponse;
 import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
-import edu.byu.cs.tweeter.server.dao.StatusDAO;
-import edu.byu.cs.tweeter.util.Pair;
+import edu.byu.cs.tweeter.server.dao.factories.DAOFactory;
+import edu.byu.cs.tweeter.server.models.DataPage;
 
-public class StatusService {
+public class StatusService extends Service {
+
+    public StatusService(DAOFactory daoFactory) {
+        super(daoFactory);
+    }
 
     public GetStoryResponse getStory(GetStoryRequest request) {
-        if(request.getUserAlias() == null){
-            throw new RuntimeException("[Bad Request] Missing a alias/username");
-        }
+        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAlias(request.getTargetUserAlias(), "target user");
 
-        Pair<List<Status>, Boolean> pair = getStatusDAO().getStory(request.getUserAlias(), request.getLimit(), request.getLastStatus());
-        return new GetStoryResponse(pair.getFirst(), pair.getSecond());
+        DataPage<Status> statusPage = daoFactory.getStatusDAO().getStory(request.getTargetUser(), request.getLimit(), request.getLastItem());
+//        Pair<List<Status>, Boolean> pair = daoFactory.getStatusDAO().getStory(request.getTargetUserAlias(), request.getLimit(), request.getLastItem());
+        return new GetStoryResponse(statusPage.getValues(), statusPage.getHasMorePages());
     }
 
     public GetFeedResponse getFeed(GetFeedRequest request) {
-        if(request.getUserAlias() == null){
-            throw new RuntimeException("[Bad Request] Missing a alias/username");
-        }else if(request.getAuthToken() == null){
-            throw new RuntimeException("[Bad Request] Missing an authToken");
-        }else if(request.getLimit() <= 0){
-            throw new RuntimeException("[Bad Request] Limit must be a positive value");
-        }
+        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkLimit(request.getLimit());
 
-        Pair<List<Status>, Boolean> pair = getStatusDAO().getFeed(request.getUserAlias(), request.getLimit(), request.getLastStatus());
-        return new GetFeedResponse(pair.getFirst(), pair.getSecond());
+        DataPage<Status> feedPage = daoFactory.getStatusDAO().getFeed(request.getTargetUserAlias(), request.getLimit(), request.getLastItem());
+        return new GetFeedResponse(feedPage.getValues(), feedPage.getHasMorePages());
     }
 
     public PostStatusResponse postStatus(PostStatusRequest request) {
-        if(request.getUserAlias() == null) {
-            throw new RuntimeException("[Bad Request] Missing a alias/username");
-        } else if(request.getStatus() == null){
-            throw new RuntimeException("[Bad Request] Missing the status");
+        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkStatus(request.getStatus());
+
+        // pull a list of aliases for all Users who follow the posting (current) user
+        List<String> followersAliases = daoFactory.getFollowDAO().getFollowersAliases(request.getCurrUserAlias());
+
+        // add the Status to the feed of each follower
+        for(String followerAlias : followersAliases){
+            daoFactory.getStatusDAO().postToFeed(followerAlias, request.getStatus());
         }
 
+        // add the Status to the story of the posting (current) user
+        daoFactory.getStatusDAO().postStatus(request.getStatus());
 
-        getStatusDAO().postStatus(request.getUserAlias(), request.getStatus());
         return new PostStatusResponse();
     }
 
-    /**
-     * Returns an instance of {@link StatusDAO}. Allows mocking of the StatusDAO class
-     * for testing purposes. All usages of StatusDAO should get their StatusDAO
-     * instance from this method to allow for mocking of the instance.
-     *
-     * @return the instance.
-     */
-    StatusDAO getStatusDAO() {
-        return new StatusDAO();
+    private void checkStatus(Status status){
+        if(status == null){
+            throw new RuntimeException("[Bad Request] Missing the status");
+        }
     }
 }

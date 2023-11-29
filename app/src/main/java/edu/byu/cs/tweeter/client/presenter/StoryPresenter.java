@@ -15,8 +15,8 @@ public class StoryPresenter extends PagedPresenter<Status> implements PagedObser
         this.authToken = authToken;
     }
 
-    protected void getItems(AuthToken authToken, User targerUser, int pageSize, Status lastItem) {
+    protected void getItems(AuthToken authToken, User currUser, User targerUser, int pageSize, Status lastItem) {
         this.statusService = getStatusService();
-        statusService.getStory(authToken, targerUser, PAGE_SIZE, (Status) lastItem, this);
+        statusService.getStory(authToken, currUser, targerUser, PAGE_SIZE, (Status) lastItem, this);
     }
 }

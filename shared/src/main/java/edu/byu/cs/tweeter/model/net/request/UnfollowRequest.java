@@ -1,6 +1,8 @@
 package edu.byu.cs.tweeter.model.net.request;
 
-public class UnfollowRequest {
+import edu.byu.cs.tweeter.model.domain.AuthToken;
+
+public class UnfollowRequest extends AuthenticatedRequest{
     private String followerAlias;
     private String followeeAlias;
 
@@ -12,10 +14,14 @@ public class UnfollowRequest {
     /**
      * Creates an instance.
      *
+     * @param authToken the AuthToken of the current user (follower)
+     * @param currUserAlias the alias of the current user (the logged in user making the request)
      * @param followerAlias the alias of the follower (user that is was following the followee)
      * @param followeeAlias the alias of the followee (user that is was followed by the follower)
      */
-    public UnfollowRequest(String followerAlias, String followeeAlias) {
+    public UnfollowRequest(AuthToken authToken, String currUserAlias, String followerAlias, String followeeAlias) {
+        super(authToken, currUserAlias);
+
         this.followerAlias = followerAlias;
         this.followeeAlias = followeeAlias;
     }
@@ -59,8 +65,10 @@ public class UnfollowRequest {
     @Override
     public String toString() {
         return "UnfollowRequest{" +
-                "followerAlias=" + followerAlias +
-                ", followeeAlias=" + followeeAlias +
+                "authToken=" + getAuthToken() +
+                ", currUserAlias=" + getCurrUserAlias() +
+                ", followerAlias=" + getFollowerAlias() +
+                ", followeeAlias=" + getFolloweeAlias() +
                 '}';
     }
 }

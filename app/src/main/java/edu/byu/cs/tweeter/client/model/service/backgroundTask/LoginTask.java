@@ -24,6 +24,7 @@ public class LoginTask extends AuthenticateTask {
      * The user's username (or "alias" or "handle"). E.g., "@susan".
      */
     private String alias;
+
     /**
      * The user's password.
      */

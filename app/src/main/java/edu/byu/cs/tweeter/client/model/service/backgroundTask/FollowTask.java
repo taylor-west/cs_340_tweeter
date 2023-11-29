@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.FollowRequest;
 import edu.byu.cs.tweeter.model.net.response.FollowResponse;
@@ -21,26 +22,27 @@ public class FollowTask extends AuthenticatedTask {
     private static final String FOLLOWEE_TAG = "followee";
 
     /**
-     * The alias of the followee (user that is being followed).
+     * The user that is being followed.
      */
-    private String followeeAlias;
+    private User followee;
     /**
-     * The alias of the follower (user that will follow the followee).
+     * The user that will follow the followee.
      */
-    private String followerAlias;
+    private User follower;
 
-    public FollowTask(AuthToken authToken, String followerAlias, String followeeAlias, Handler messageHandler) {
+    public FollowTask(AuthToken authToken, User currUser, User follower, User followee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.followerAlias = followerAlias;
-        this.followeeAlias = followeeAlias;
+        this.currUser = currUser;
+        this.follower = follower;
+        this.followee = followee;
     }
 
     public void performTask() {
         try {
-            FollowRequest request = new FollowRequest(followerAlias, followeeAlias);
-            FollowResponse response = getServerFacade().follow(request, FollowService.getFollowUrlPath(followerAlias, followeeAlias));
+            FollowRequest request = new FollowRequest(authToken, follower.getAlias(), follower, followee);
+            FollowResponse response = getServerFacade().follow(request, FollowService.getFollowUrlPath(follower.getAlias(), followee.getAlias()));
 
             if (response.isSuccess()) {
                     sendSuccessMessage();

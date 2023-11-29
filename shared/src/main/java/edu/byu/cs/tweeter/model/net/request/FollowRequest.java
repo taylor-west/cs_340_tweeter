@@ -1,8 +1,11 @@
 package edu.byu.cs.tweeter.model.net.request;
 
-public class FollowRequest {
-    private String followerAlias;
-    private String followeeAlias;
+import edu.byu.cs.tweeter.model.domain.AuthToken;
+import edu.byu.cs.tweeter.model.domain.User;
+
+public class FollowRequest extends AuthenticatedRequest {
+    private User follower;
+    private User followee;
 
     /**
      * Allows construction of the object from Json. Private so it won't be called in normal code.
@@ -12,55 +15,92 @@ public class FollowRequest {
     /**
      * Creates an instance.
      *
-     * @param followerAlias the alias of the follower (user that is going to be following the followee)
-     * @param followeeAlias the alias of the followee (user that is going to be followed by the follower)
+     * @param authToken the AuthToken of the current user (should be the follower)
+     * @param currUserAlias the alias of the current user (logged in performing the request)
+     * @param follower the User that is going to be following the followee
+     * @param followee the User that is going to be followed by the follower
      */
-    public FollowRequest(String followerAlias, String followeeAlias) {
-        this.followerAlias = followerAlias;
-        this.followeeAlias = followeeAlias;
+    public FollowRequest(AuthToken authToken, String currUserAlias, User follower, User followee) {
+        super(authToken, currUserAlias);
+
+        this.follower = follower;
+        this.followee = followee;
     }
 
     /**
-     * Returns alias/username follower (user that is following the followee)
+     * Returns the follower (User that is following the followee)
+     * @return the User that is following the followee.
+     */
+    public User getFollower() {
+        return follower;
+    }
+
+    /**
+     * Sets the follower.
+     * @param follower the User that is following the followee
+     */
+    public void setFollower(User follower) {
+        this.follower = follower;
+    }
+
+    /**
+     * Returns the followee (User that is being followed by the follower).
+     * @return the User that is being followed by the follower
+     */
+    public User getFollowee() {
+        return followee;
+    }
+
+    /**
+     * Sets the followee.
+     * @param followee the User that is being followed by the followee
+     */
+    public void setFollowee(User followee) {
+        this.followee = followee;
+    }
+
+    /**
+     * Returns alias/username pf the follower (user that is following the followee)
      *
-     * @return the follower (user that is following the followee).
+     * @return the alias of the follower (user that is following the followee).
      */
     public String getFollowerAlias() {
-        return followerAlias;
+        return follower.getAlias();
     }
 
     /**
-     * Sets the followerAlias.
+     * Sets the follower alias.
      *
      * @param followerAlias the alias/username of the follower (user that is following the followee)
      */
     public void setFollowerAlias(String followerAlias) {
-        this.followerAlias = followerAlias;
+        this.follower.setAlias(followerAlias);
     }
 
     /**
-     * Returns followeeAlias (alias of the user that is being followed by the follower)
+     * Returns followee's alias (alias of the user that is being followed by the follower)
      *
      * @return the alias of the followee (user that is being followed by the follower).
      */
     public String getFolloweeAlias() {
-        return followeeAlias;
+        return followee.getAlias();
     }
 
     /**
-     * Sets the followee alias.
+     * Sets the followee's alias.
      *
      * @param followeeAlias the alias of the followee (user that is being followed by the follower
      */
     public void setFolloweeAlias(String followeeAlias) {
-        this.followeeAlias = followeeAlias;
+        this.followee.setAlias(followeeAlias);
     }
 
     @Override
     public String toString() {
         return "FollowRequest{" +
-                "followerAlias=" + followerAlias +
-                ", followeeAlias=" + followeeAlias +
+                "authToken=" + getAuthToken() +
+                ", follower=" + this.follower.toString() +
+                ", followee=" + this.followee.toString() +
                 '}';
     }
 }

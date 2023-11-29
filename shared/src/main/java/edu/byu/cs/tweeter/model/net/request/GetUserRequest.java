@@ -1,16 +1,15 @@
 package edu.byu.cs.tweeter.model.net.request;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.Status;
 
 /**
  * Contains all the information needed to make a request to have the server return information
  * about the specified user.
  */
-public class GetUserRequest {
+public class GetUserRequest extends AuthenticatedRequest{
+    private String targetUserAlias
 
-    private AuthToken authToken;
-    private String userAlias;
+;
 
     /**
      * Allows construction of the object from Json. Private so it won't be called in normal code.
@@ -20,54 +19,40 @@ public class GetUserRequest {
     /**
      * Creates an instance.
      *
-     * @param userAlias the alias of the user whose story/statuses  are to be returned.
+     * @param authToken the AuthToken of the current user (whose is logged in and making the request)
+     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
+     * @param targetUserAlias the alias of the user whose story/statuses  are to be returned.
      */
-    public GetUserRequest(AuthToken authToken, String userAlias) {
-        this.authToken = authToken;
-        this.userAlias = userAlias;
+    public GetUserRequest(AuthToken authToken, String currUserAlias, String targetUserAlias) {
+        super(authToken, currUserAlias);
+
+        this.targetUserAlias = targetUserAlias;
     }
 
     /**
-     * Returns the auth token of the user who is making the request.
+     * Returns the target user (user whose information is to be returned by this request).
      *
-     * @return the auth token.
+     * @return the target user.
      */
-    public AuthToken getAuthToken() {
-        return authToken;
+    public String getTargetUserAlias() {
+        return targetUserAlias;
     }
 
     /**
-     * Sets the auth token.
+     * Sets the target user (user whose information is to be returned by this request).
      *
-     * @param authToken the auth token.
+     * @param targetUserAlias the target user.
      */
-    public void setAuthToken(AuthToken authToken) {
-        this.authToken = authToken;
-    }
-
-    /**
-     * Returns the follower whose followees are to be returned by this request.
-     *
-     * @return the follower.
-     */
-    public String getUserAlias() {
-        return userAlias;
-    }
-
-    /**
-     * Sets the follower.
-     *
-     * @param followerAlias the follower.
-     */
-    public void setUserAlias(String followerAlias) {
-        this.userAlias = followerAlias;
+    public void setTargetUserAlias(String targetUserAlias) {
+        this.targetUserAlias = targetUserAlias;
     }
 
     @Override
     public String toString() {
         return "GetUserRequest{" +
-                "authToken=" + authToken.toString() +
-                ", userAlias='" + userAlias + '\'' +
+                "authToken=" + getAuthToken() +
+                "currUserAlias=" + getCurrUserAlias() +
+                ", targetUserAlias='" + getTargetUserAlias() + '\'' +
                 '}';
     }
 }

@@ -30,13 +30,14 @@ public class StatusService {
      * This is an asynchronous operation.
      *
      * @param authToken the session auth token.
-     * @param user the user for whom the feed is being retrieved.
+     * @param currUser the user who is currently logged in
+     * @param targetUser the user for whom the feed is being retrieved.
      * @param pageSize the maximum number of statuses to return.
      * @param lastStatus the last status returned in the previous request (can be null).
      */
-    public void getStory(AuthToken authToken, User user, int pageSize, Status lastStatus,
+    public void getStory(AuthToken authToken, User currUser, User targetUser, int pageSize, Status lastStatus,
                          PagedObserver<Status> observer) {
-        GetStoryTask getStoryTask = getGetStoryTask(authToken, user, pageSize, lastStatus, observer);
+        GetStoryTask getStoryTask = getGetStoryTask(authToken, currUser, targetUser, pageSize, lastStatus, observer);
         BackgroundTaskUtils.runTask(getStoryTask);
     }
 
@@ -44,9 +45,9 @@ public class StatusService {
         return STORY_URL_PATH + "/" + userAlias;
     }
 
-    public void postStatus(AuthToken currUserAuthToken, User user, Status newStatus,
+    public void postStatus(AuthToken currUserAuthToken, User currUser, User targetUser, Status newStatus,
                            PostStatusObserver observer) {
-        PostStatusTask postStatusTask = getPostStatusTask(currUserAuthToken, user, newStatus, observer);
+        PostStatusTask postStatusTask = getPostStatusTask(currUserAuthToken, currUser, targetUser, newStatus, observer);
         BackgroundTaskUtils.runTask(postStatusTask);
     }
 
@@ -62,13 +63,14 @@ public class StatusService {
      * This is an asynchronous operation.
      *
      * @param authToken the session auth token.
-     * @param user the user for whom the feed is being retrieved.
+     * @param currUser the user who is currently logged in
+     * @param targetUser the user for whom the feed is being retrieved.
      * @param pageSize the maximum number of statuses to return.
      * @param lastStatus the last status returned in the previous request (can be null).
      */
-    public void getFeed(AuthToken authToken, User user, int pageSize, Status lastStatus,
+    public void getFeed(AuthToken authToken, User currUser, User targetUser, int pageSize, Status lastStatus,
                         PagedObserver<Status> observer) {
-        GetFeedTask getFeedTask = getGetFeedTask(authToken, user, pageSize, lastStatus, observer);
+        GetFeedTask getFeedTask = getGetFeedTask(authToken, currUser, targetUser, pageSize, lastStatus, observer);
         BackgroundTaskUtils.runTask(getFeedTask);
     }
 
@@ -85,9 +87,9 @@ public class StatusService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public GetFeedTask getGetFeedTask(AuthToken authToken, User user, int pageSize,
+    public GetFeedTask getGetFeedTask(AuthToken authToken, User currUser, User targetUser, int pageSize,
                                       Status lastStatus, PagedObserver<Status> observer){
-        return new GetFeedTask(authToken, user, pageSize, lastStatus,
+        return new GetFeedTask(authToken, currUser, targetUser, pageSize, lastStatus,
                 new PagedHandler<Status>(observer, "get feed",
                         GetFeedTask.STATUSES_KEY));
     }
@@ -100,9 +102,9 @@ public class StatusService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public GetStoryTask getGetStoryTask(AuthToken authToken, User user, int pageSize,
+    public GetStoryTask getGetStoryTask(AuthToken authToken, User currUser, User targetUser, int pageSize,
                                         Status lastStatus, PagedObserver<Status> observer){
-        return new GetStoryTask(authToken, user, pageSize, lastStatus,
+        return new GetStoryTask(authToken, currUser, targetUser, pageSize, lastStatus,
                 new PagedHandler<Status>(observer, "get story",
                         GetStoryTask.STATUSES_KEY));
     }
@@ -115,9 +117,9 @@ public class StatusService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public PostStatusTask getPostStatusTask(AuthToken authToken, User user,
+    public PostStatusTask getPostStatusTask(AuthToken authToken, User currUser, User targetUser,
                                             Status newStatus, PostStatusObserver observer) {
-        return new PostStatusTask(authToken, user, newStatus, new PostStatusHandler(observer));
+        return new PostStatusTask(authToken, currUser, targetUser, newStatus, new PostStatusHandler(observer));
     }
 
 }

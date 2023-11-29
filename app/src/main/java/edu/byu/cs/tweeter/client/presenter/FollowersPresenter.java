@@ -38,8 +38,8 @@ public class FollowersPresenter extends PagedPresenter<User> implements PagedObs
      * @param pageSize the maximum number of followees to return.
      * @param lastFollower the last followee returned in the previous request (can be null).
      */
-    protected void getItems(AuthToken authToken, User targetUser, int pageSize, User lastFollower) {
-        getFollowersService().getFollowers(authToken, targetUser, pageSize, lastFollower, this);
+    protected void getItems(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollower) {
+        getFollowersService().getFollowers(authToken, currUser, targetUser, pageSize, lastFollower, this);
     }
 
     /**

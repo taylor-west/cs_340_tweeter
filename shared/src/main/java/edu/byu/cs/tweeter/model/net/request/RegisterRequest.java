@@ -1,27 +1,16 @@
 package edu.byu.cs.tweeter.model.net.request;
 
-import edu.byu.cs.tweeter.model.domain.AuthToken;
-import edu.byu.cs.tweeter.model.domain.User;
-
-public class RegisterRequest {
-    /**
-     * The user's alias/username/handle
-     */
-    private String username;
-
-    /**
-     * The user's password
-     */
-    private String password;
-
+public class RegisterRequest extends UnauthenticatedRequest{
     /**
      * The user's first name.
      */
     private String firstName;
+
     /**
      * The user's last name.
      */
     private String lastName;
+
     /**
      * The base-64 encoded bytes of the user's profile image.
      */
@@ -41,47 +30,11 @@ public class RegisterRequest {
      * @param image The user's profile picture (encoded as a string)
      */
     public RegisterRequest(String username, String password, String firstName, String lastName, String image) {
-        this.username = username;
-        this.password = password;
+        super(username, password, DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS);
+
         this.firstName = firstName;
         this.lastName = lastName;
         this.image = image;
-    }
-
-    /**
-     * Returns the username of the user to be logged in by this request.
-     *
-     * @return the username.
-     */
-    public String getUsername() {
-        return username;
-    }
-
-    /**
-     * Sets the username.
-     *
-     * @param username the username.
-     */
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    /**
-     * Returns the password of the user to be logged in by this request.
-     *
-     * @return the password.
-     */
-    public String getPassword() {
-        return password;
-    }
-
-    /**
-     * Sets the password.
-     *
-     * @param password the password.
-     */
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     /**

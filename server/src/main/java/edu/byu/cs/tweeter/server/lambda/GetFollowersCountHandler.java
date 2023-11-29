@@ -3,12 +3,9 @@ package edu.byu.cs.tweeter.server.lambda;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-import java.util.logging.Handler;
-
 import edu.byu.cs.tweeter.model.net.request.GetFollowersCountRequest;
-import edu.byu.cs.tweeter.model.net.request.GetFollowingCountRequest;
 import edu.byu.cs.tweeter.model.net.response.GetFollowersCountResponse;
-import edu.byu.cs.tweeter.model.net.response.GetFollowingCountResponse;
+import edu.byu.cs.tweeter.server.dao.factories.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.FollowService;
 
 public class GetFollowersCountHandler implements RequestHandler<GetFollowersCountRequest, GetFollowersCountResponse> {
@@ -23,7 +20,7 @@ public class GetFollowersCountHandler implements RequestHandler<GetFollowersCoun
     @Override
     public GetFollowersCountResponse handleRequest(GetFollowersCountRequest request, Context context) {
         System.out.println("GetFollowersCountHandler has received a request: " + request.toString());
-        FollowService service = new FollowService();
+        FollowService service = new FollowService(new DynamoDAOFactory());
         GetFollowersCountResponse response = service.getFollowersCount(request);
         System.out.println("GetFollowersCountHandler.handleRequest returning response: " + response.toString());
         return response;

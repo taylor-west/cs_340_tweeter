@@ -110,10 +110,11 @@ public class UserService {
     /**
      * Makes an asynchronous request to get a user's information
      * @param authToken
-     * @param alias the alias of the target user
+     * @param currUser the user who is currently logged in
+     * @param targetUserAlias the alias of the target user
      */
-    public void getUser(AuthToken authToken, String alias, GetUserObserver observer) {
-        GetUserTask getUserTask = getGetUserTask(authToken, alias, observer);
+    public void getUser(AuthToken authToken, User currUser, String targetUserAlias, GetUserObserver observer) {
+        GetUserTask getUserTask = getGetUserTask(authToken, currUser, targetUserAlias, observer);
         BackgroundTaskUtils.runTask(getUserTask);
     }
 
@@ -128,16 +129,17 @@ public class UserService {
      *
      * @return the instance.
      */
-    public GetUserTask getGetUserTask(AuthToken authToken, String alias, GetUserObserver observer){
-        return new GetUserTask(authToken, alias, new GetUserHandler(observer));
+    public GetUserTask getGetUserTask(AuthToken authToken, User currUser, String targetUserAlias, GetUserObserver observer){
+        return new GetUserTask(authToken, currUser, targetUserAlias, new GetUserHandler(observer));
     }
 
     /**
      * Makes an asynchoronous logout request
      * @param authToken
+     * @param currUser the user who is currently logged in
      */
-    public void logout(AuthToken authToken, LogoutObserver observer) {
-        LogoutTask logoutTask = getLogoutTask(authToken, observer);
+    public void logout(AuthToken authToken, User currUser, LogoutObserver observer) {
+        LogoutTask logoutTask = getLogoutTask(authToken, currUser, observer);
         BackgroundTaskUtils.runTask(logoutTask);
     }
 
@@ -152,18 +154,18 @@ public class UserService {
      *
      * @return the instance.
      */
-    public LogoutTask getLogoutTask(AuthToken authToken, LogoutObserver observer){
-        return new LogoutTask(authToken, new LogoutHandler(observer));
+    public LogoutTask getLogoutTask(AuthToken authToken, User currUser, LogoutObserver observer){
+        return new LogoutTask(authToken, currUser, new LogoutHandler(observer));
     }
 
-    public void updateFollowingAndFollowers(AuthToken authToken,
-                                            User user, UpdateFolloweesAndFollowersObserver observer) {
+    public void updateFollowingAndFollowers(AuthToken authToken, User currUser,
+                                            User targetUser, UpdateFolloweesAndFollowersObserver observer) {
         // Get count of most recently selected user's followers.
-        GetFollowersCountTask followersCountTask = getGetFollowersCountTask(authToken, user, observer);
+        GetFollowersCountTask followersCountTask = getGetFollowersCountTask(authToken, currUser, targetUser, observer);
         BackgroundTaskUtils.runTask(followersCountTask);
 
         // Get count of most recently selected user's followees (who they are following)
-        GetFollowingCountTask followeesCountTask = getGetFollowingCountTask(authToken, user, observer);
+        GetFollowingCountTask followeesCountTask = getGetFollowingCountTask(authToken, currUser, targetUser, observer);
         BackgroundTaskUtils.runTask(followeesCountTask);
 
     }
@@ -175,8 +177,8 @@ public class UserService {
      *
      * @return the instance.
      */
-    GetFollowersCountTask getGetFollowersCountTask(AuthToken authToken, User user, UpdateFolloweesAndFollowersObserver observer){
-        return new GetFollowersCountTask(authToken, user, new GetFollowersCountHandler(observer, "get followers count"));
+    GetFollowersCountTask getGetFollowersCountTask(AuthToken authToken, User currUser, User targetUser, UpdateFolloweesAndFollowersObserver observer){
+        return new GetFollowersCountTask(authToken, currUser, targetUser, new GetFollowersCountHandler(observer, "get followers count"));
     }
 
     /**
@@ -186,7 +188,7 @@ public class UserService {
      *
      * @return the instance.
      */
-    GetFollowingCountTask getGetFollowingCountTask(AuthToken authToken, User user, UpdateFolloweesAndFollowersObserver observer){
-        return new GetFollowingCountTask(authToken, user, new GetFollowingCountHandler(observer, "get followees count"));
+    GetFollowingCountTask getGetFollowingCountTask(AuthToken authToken, User currUser, User targetUser, UpdateFolloweesAndFollowersObserver observer){
+        return new GetFollowingCountTask(authToken, currUser, targetUser, new GetFollowingCountHandler(observer, "get followees count"));
     }
 }

@@ -20,27 +20,28 @@ public class UnfollowTask extends AuthenticatedTask {
     private static final String LOG_TAG = "UnfollowTask";
 
     /**
-     * The user that is being unfollowed.
+     * The user that is unfollowing the followee
      */
-    private User targetUser;
+    private User follower;
 
     /**
-     * The user that is unfollowing the targetUser
+     * The user that is being unfollowed hy the follower.
      */
-    private User currentUser;
+    private User followee;
 
-    public UnfollowTask(AuthToken authToken, User currentUser, User targetUser, Handler messageHandler) {
+    public UnfollowTask(AuthToken authToken, User currUser, User follower, User followee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currentUser = currentUser;
-        this.targetUser = targetUser;
+        this.currUser = currUser;
+        this.follower = follower;
+        this.followee = followee;
     }
 
     public void performTask() {
         try {
-            UnfollowRequest request = new UnfollowRequest(currentUser.getAlias(), targetUser.getAlias());
-            UnfollowResponse response = getServerFacade().unfollow(request, FollowService.getUnfollowUrlPath(currentUser.getAlias(), targetUser.getAlias()));
+            UnfollowRequest request = new UnfollowRequest(authToken, currUser.getAlias(), follower.getAlias(), followee.getAlias());
+            UnfollowResponse response = getServerFacade().unfollow(request, FollowService.getUnfollowUrlPath(follower.getAlias(), followee.getAlias()));
 
             if (response.isSuccess()) {
                 sendSuccessMessage();

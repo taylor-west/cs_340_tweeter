@@ -23,27 +23,20 @@ public class GetFollowingTask extends PagedTask<User> {
     private static final String LOG_TAG = "GetFollowingTask";
 
     public static final String FOLLOWEES_KEY = "followees";
-//    public static final String MORE_PAGES_KEY = "more-pages";
 
-    /**
-     * The last person being followed returned in the previous page of results (can be null).
-     * This allows the new page to begin where the previous page ended.
-     */
-    protected User lastFollowee;
     /**
      * The followee users returned by the server.
      */
     private List<User> followees;
-    /**
-     * If there are more pages, returned by the server.
-     */
-    private boolean hasMorePages;
+    private Boolean hasMorePages;
 
-    public GetFollowingTask(AuthToken authToken, User targetUser,
+
+    public GetFollowingTask(AuthToken authToken, User currUser, User targetUser,
                             int limit, User lastFollowee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
+        this.currUser = currUser;
         this.targetUser = targetUser;
         this.limit = limit;
         this.lastItem = lastFollowee;
@@ -52,14 +45,16 @@ public class GetFollowingTask extends PagedTask<User> {
     @Override
     public void performTask() {
         try {
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
             String lastFolloweeAlias = lastItem == null ? null : lastItem.getAlias();
 
-            FollowingRequest request = new FollowingRequest(authToken, targetUserAlias, limit, lastFolloweeAlias);
+            FollowingRequest request = new FollowingRequest(authToken, currUserAlias, limit, lastFolloweeAlias, targetUserAlias);
             FollowingResponse response = getServerFacade().getFollowing(request, FollowService.getFollowingUrlPath(targetUserAlias));
 
             if (response.isSuccess()) {
                 this.followees = response.getFollowing();
+//                this.lastItem = response.getFollowing().get(response.getFollowing().size() - 1);
                 this.hasMorePages = response.getHasMorePages();
                 sendSuccessMessage();
             } else {

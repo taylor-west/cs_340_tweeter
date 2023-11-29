@@ -41,7 +41,7 @@ public class FollowingPresenterTest {
     @BeforeEach
     public void setup() {
         fakeUser = new User("Paul", "Bunyon", "@Paul_Bunyon_123", "https://s3.amazon.com/paul_bunyon");
-        fakeAuthToken = new AuthToken("abc-123-xyz-789");
+        fakeAuthToken = new AuthToken();
 //        fakeAuthToken = new AuthToken("abc-123-xyz-789", "August 12, 2021 3:01 PM");
 
         // followingViewMock is used to verify that FollowingPresenter correctly calls view methods.
@@ -90,7 +90,7 @@ public class FollowingPresenterTest {
                 return null;
             }
         };
-        Mockito.doAnswer(manyFolloweesAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(manyFolloweesAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
         followingPresenterSpy.loadMoreItems();
     }
 
@@ -114,7 +114,7 @@ public class FollowingPresenterTest {
                 return null;
             }
         };
-        Mockito.doAnswer(manyFolloweesAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(manyFolloweesAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
 
         followingPresenterSpy.loadMoreItems();
 
@@ -141,7 +141,7 @@ public class FollowingPresenterTest {
                 return null;
             }
         };
-        Mockito.doAnswer(failureAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(failureAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
 
         followingPresenterSpy.loadMoreItems();
 
@@ -163,7 +163,7 @@ public class FollowingPresenterTest {
                 return null;
             }
         };
-        Mockito.doAnswer(exceptionAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
+        Mockito.doAnswer(exceptionAnswer).when(followingServiceMock).getFollowing(Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any());
 
         followingPresenterSpy.loadMoreItems();
 

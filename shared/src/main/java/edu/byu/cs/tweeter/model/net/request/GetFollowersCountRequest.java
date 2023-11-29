@@ -6,9 +6,8 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
  * Contains all the information needed to make a request to have the server return the number of
  * followees for a specified follower.
  */
-public class GetFollowersCountRequest {
+public class GetFollowersCountRequest extends AuthenticatedRequest {
 
-    private AuthToken authToken;
     private String followeeAlias;
 
     /**
@@ -19,29 +18,14 @@ public class GetFollowersCountRequest {
     /**
      * Creates an instance.
      *
+     * @param authToken the AuthToken of the current user (should be the follower)
+     * @param currUserAlias the alias of the current user (logged in performing the request)
      * @param followeeAlias the alias of the user whose followers are being counted.
      */
-    public GetFollowersCountRequest(AuthToken authToken, String followeeAlias) {
-        this.authToken = authToken;
+    public GetFollowersCountRequest(AuthToken authToken, String currUserAlias, String followeeAlias) {
+        super(authToken, currUserAlias);
+
         this.followeeAlias = followeeAlias;
-    }
-
-    /**
-     * Returns the auth token of the user who is making the request.
-     *
-     * @return the auth token.
-     */
-    public AuthToken getAuthToken() {
-        return authToken;
-    }
-
-    /**
-     * Sets the auth token.
-     *
-     * @param authToken the auth token.
-     */
-    public void setAuthToken(AuthToken authToken) {
-        this.authToken = authToken;
     }
 
     /**
@@ -62,11 +46,13 @@ public class GetFollowersCountRequest {
         this.followeeAlias = followeeAlias;
     }
 
+
     @Override
     public String toString() {
         return "GetFollowingCountRequest{" +
-                "authToken=" + authToken.toString() +
-                ", followeeAlias='" + followeeAlias + '\'' +
+                "authToken=" + getAuthToken() +
+                ", currUserAlias=" + getCurrUserAlias() +
+                ", followeeAlias='" + getFolloweeAlias() + '\'' +
                 '}';
     }
 }

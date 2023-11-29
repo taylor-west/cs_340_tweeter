@@ -1,6 +1,5 @@
 package edu.byu.cs.tweeter.model.net.response;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 

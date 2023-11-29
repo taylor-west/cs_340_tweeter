@@ -37,11 +37,12 @@ public class GetFollowersTask extends PagedTask<User> {
      */
     private boolean hasMorePages;
 
-    public GetFollowersTask(AuthToken authToken, User targetUser, int limit, User lastUser,
+    public GetFollowersTask(AuthToken authToken, User currUser, User targetUser, int limit, User lastUser,
                             Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
+        this.currUser = currUser;
         this.targetUser = targetUser;
         this.limit = limit;
         this.lastItem = lastUser;
@@ -50,10 +51,11 @@ public class GetFollowersTask extends PagedTask<User> {
     public void performTask() {
 
         try {
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
             String lastFollowerAlias = lastItem == null ? null : lastItem.getAlias();
 
-            FollowersRequest request = new FollowersRequest(authToken, targetUserAlias, limit, lastFollowerAlias);
+            FollowersRequest request = new FollowersRequest(authToken, currUserAlias, limit, lastFollowerAlias, targetUserAlias);
             FollowersResponse response = getServerFacade().getFollowers(request, FollowService.getFollowersUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {

@@ -20,21 +20,25 @@ import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
 public class PostStatusTask extends AuthenticatedTask {
     private static final String LOG_TAG = "PostStatusTask";
 
-    private User user;
+    private User targetUser;
     private Status status;
 
-    public PostStatusTask(AuthToken authToken, User user, Status status, Handler messageHandler) {
+    public PostStatusTask(AuthToken authToken, User currUser, User targetUser, Status status, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.user = user;
+        this.currUser = currUser;
+        this.targetUser = targetUser;
         this.status = status;
     }
 
     public void performTask() {
         try {
-            PostStatusRequest request = new PostStatusRequest(authToken, user.getAlias(), status);
-            PostStatusResponse response = getServerFacade().postStatus(request, StatusService.getPostStatusUrlPath(user.getAlias()));
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
+            String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
+
+            PostStatusRequest request = new PostStatusRequest(authToken, currUserAlias, targetUserAlias, status);
+            PostStatusResponse response = getServerFacade().postStatus(request, StatusService.getPostStatusUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {
                 sendSuccessMessage();

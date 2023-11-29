@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import edu.byu.cs.tweeter.model.net.request.GetFeedRequest;
 import edu.byu.cs.tweeter.model.net.response.GetFeedResponse;
+import edu.byu.cs.tweeter.server.dao.factories.DynamoDAOFactory;
 import edu.byu.cs.tweeter.server.service.StatusService;
 
 /**
@@ -15,7 +16,7 @@ public class GetFeedHandler implements RequestHandler<GetFeedRequest, GetFeedRes
     @Override
     public GetFeedResponse handleRequest(GetFeedRequest getFeedRequest, Context context) {
         System.out.println("GetFeedHandler has received a request: " + getFeedRequest.toString());
-        StatusService statusService = new StatusService();
+        StatusService statusService = new StatusService(new DynamoDAOFactory());
         GetFeedResponse response = statusService.getFeed(getFeedRequest);
         System.out.println("GetFeedHandler.handleRequest is returning a response: " + response.toString());
         return response;

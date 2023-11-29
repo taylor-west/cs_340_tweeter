@@ -23,24 +23,27 @@ public class GetUserTask extends AuthenticatedTask {
     /**
      * Alias (or handle) for user whose profile is being retrieved.
      */
-    private String alias;
+    private String targetUserAlias;
 
-    private User user;
+    private User targetUser;
 
-    public GetUserTask(AuthToken authToken, String alias, Handler messageHandler) {
+    public GetUserTask(AuthToken authToken, User currUser, String targetUserAlias, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.alias = alias;
+        this.currUser = currUser;
+        this.targetUserAlias = targetUserAlias;
     }
 
     public void performTask() {
         try {
-            GetUserRequest request = new GetUserRequest(authToken, alias);
-            GetUserResponse response = getServerFacade().getUser(request, UserService.getGetUserUrlPath(alias));
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
+
+            GetUserRequest request = new GetUserRequest(authToken, currUserAlias, targetUserAlias);
+            GetUserResponse response = getServerFacade().getUser(request, UserService.getGetUserUrlPath(targetUserAlias));
 
             if (response.isSuccess()) {
-                this.user = response.getUser();
+                this.targetUser = response.getUser();
                 sendSuccessMessage();
             } else {
                 sendFailedMessage(response.getMessage());
@@ -51,15 +54,10 @@ public class GetUserTask extends AuthenticatedTask {
         }
     }
 
-    private User getUser() {
-        this.user = getFakeData().findUserByAlias(alias);
-        return user;
-    }
-
     protected Bundle constructSuccessBundle() {
         Bundle msgBundle = new Bundle();
         msgBundle.putBoolean(SUCCESS_KEY, true);
-        msgBundle.putSerializable(USER_KEY, this.user);
+        msgBundle.putSerializable(USER_KEY, this.targetUser);
         return msgBundle;
     }
 

@@ -9,6 +9,7 @@ import androidx.fragment.app.FragmentManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.byu.cs.tweeter.client.cache.Cache;
 import edu.byu.cs.tweeter.client.model.service.FollowService;
 import edu.byu.cs.tweeter.client.presenter.observers.FollowObserver;
 import edu.byu.cs.tweeter.client.presenter.observers.IsFollowerObserver;
@@ -86,7 +87,7 @@ public class MainPresenter extends BasePresenter implements
         getView().showInfoMessage("Logging Out...");
 
         this.userService = getUserService();
-        this.userService.logout(currUserAuthToken, this);
+        this.userService.logout(currUserAuthToken, Cache.getInstance().getCurrUser(), this);
     }
 
     @Override
@@ -100,7 +101,7 @@ public class MainPresenter extends BasePresenter implements
     // required by UpdateFollowingAndFollowersObserver
     public void updateSelectedUserFollowingAndFollowers(AuthToken currUserAuthToken, User currUser, User selectedUser) {
         this.userService = getUserService();
-        this.userService.updateFollowingAndFollowers(currUserAuthToken,
+        this.userService.updateFollowingAndFollowers(currUserAuthToken, Cache.getInstance().getCurrUser(),
                 selectedUser, this);
     }
 
@@ -128,7 +129,7 @@ public class MainPresenter extends BasePresenter implements
             getView().isFollowing(true);
 
             FollowService followService = new FollowService();
-            followService.isFollower(currUserAuthToken, currentUser, selectedUser, this);
+            followService.isFollower(currUserAuthToken, Cache.getInstance().getCurrUser(), currentUser, selectedUser, this);
         }
     }
 
@@ -147,10 +148,10 @@ public class MainPresenter extends BasePresenter implements
 
         if (followButtonText.equals(followingString)) {
             // already following, so we UNFOLLOW
-            followService.unfollow(currUserAuthToken, selectedUser, currUser, this);
+            followService.unfollow(currUserAuthToken, Cache.getInstance().getCurrUser(), selectedUser, currUser, this);
         } else {
             // not current following, so we FOLLOW
-            followService.follow(currUserAuthToken, selectedUser, currUser, this);
+            followService.follow(currUserAuthToken, Cache.getInstance().getCurrUser(), selectedUser, currUser, this);
         }
     }
     ////////////////
@@ -251,7 +252,7 @@ public class MainPresenter extends BasePresenter implements
         Status newStatus = getStatus(post, currUser, parseURLs(post), parseMentions(post));
 
         this.statusService = getStatusService();
-        this.statusService.postStatus(currUserAuthToken, currUser, newStatus, this);
+        this.statusService.postStatus(currUserAuthToken, Cache.getInstance().getCurrUser(), currUser, newStatus, this);
     }
 
     /**

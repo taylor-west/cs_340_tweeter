@@ -11,14 +11,14 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.FollowingRequest;
 import edu.byu.cs.tweeter.model.net.response.FollowingResponse;
-import edu.byu.cs.tweeter.server.dao.FollowDAO;
+import edu.byu.cs.tweeter.server.dao.dynamo.DynamoFollowDAO;
 import edu.byu.cs.tweeter.util.Pair;
 
 public class FollowServiceTest {
 
     private FollowingRequest request;
     private FollowingResponse expectedResponse;
-    private FollowDAO mockFollowDAO;
+    private DynamoFollowDAO mockFollowDAO;
     private FollowService followServiceSpy;
 
     @BeforeEach
@@ -35,12 +35,12 @@ public class FollowServiceTest {
                 "https://faculty.cs.byu.edu/~jwilkerson/cs340/tweeter/images/daisy_duck.png");
 
         // Setup a request object to use in the tests
-        request = new FollowingRequest(authToken, currentUser.getAlias(), 3, null);
+        request = new FollowingRequest(authToken, currentUser.getAlias(), 3, null, currentUser.getAlias());
 
         // Setup a mock FollowDAO that will return known responses
         expectedResponse = new FollowingResponse(Arrays.asList(resultUser1, resultUser2, resultUser3), false);
-        mockFollowDAO = Mockito.mock(FollowDAO.class);
-        Mockito.when(mockFollowDAO.getFollowing(request.getFollowerAlias(), request.getLimit(), request.getLastFolloweeAlias()))
+        mockFollowDAO = Mockito.mock(DynamoFollowDAO.class);
+        Mockito.when(mockFollowDAO.getFollowing(request.getFollowerAlias(), request.getLimit(), request.getLastItem()))
                 .thenReturn(new Pair<>(expectedResponse.getFollowing(), expectedResponse.getHasMorePages()));
 
         followServiceSpy = Mockito.spy(FollowService.class);
@@ -49,7 +49,7 @@ public class FollowServiceTest {
 
     /**
      * Verify that the {@link FollowService#getFollowing(FollowingRequest)}
-     * method returns the same result as the {@link FollowDAO} class.
+     * method returns the same result as the {@link DynamoFollowDAO} class.
      */
     @Test
     public void testgetFollowing_validRequest_correctResponse() {

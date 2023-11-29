@@ -1,5 +1,6 @@
 package edu.byu.cs.tweeter.server.service;
 // RECEIVES CALLS FROM THE LAMBDA (SERVER.HANDLERS) AND RETURNS FAKE DATA
+
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.GetUserRequest;
@@ -10,99 +11,75 @@ import edu.byu.cs.tweeter.model.net.response.GetUserResponse;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
 import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
-import edu.byu.cs.tweeter.server.dao.StatusDAO;
-import edu.byu.cs.tweeter.server.dao.UserDAO;
-import edu.byu.cs.tweeter.util.FakeData;
-import edu.byu.cs.tweeter.util.Pair;
+import edu.byu.cs.tweeter.server.dao.factories.DAOFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-public class UserService {
+public class UserService extends Service {
+
+    public UserService(DAOFactory daoFactory) {
+        super(daoFactory);
+    }
 
     public GetUserResponse getUser(GetUserRequest request) {
-        if(request.getUserAlias() == null){
-            throw new RuntimeException("[Bad Request] Missing a username");
+        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        if (request.getTargetUserAlias() == null) {
+            throw new RuntimeException("[Bad Request] Error in UserService.getUser: target user alias '" + request.getTargetUserAlias() + "' does not exist");
         }
 
-        User user = getUserDAO().getUser(request.getUserAlias());
+        User user = daoFactory.getUserDAO().getUser(request.getTargetUserAlias());
+
         return new GetUserResponse(user);
     }
 
     public LoginResponse login(LoginRequest request) {
-        if(request.getUsername() == null){
-            throw new RuntimeException("[Bad Request] Missing a username");
-        } else if(request.getPassword() == null) {
-            throw new RuntimeException("[Bad Request] Missing a password");
-        }
+        checkAlias(request.getUsername(), "user");
+        checkPassword(request.getUsername(), request.getPassword());
 
-        Pair<User, AuthToken> pair = getUserDAO().login(request.getUsername(), request.getPassword());
-        return new LoginResponse(pair.getFirst(), pair.getSecond());
+        User loggedInUser = daoFactory.getUserDAO().login(request.getUsername(), request.getPassword());
+        if (loggedInUser != null) {
+            AuthToken loggedInAuthToken = daoFactory.getAuthTokenDAO().addAuthToken(request.getDesiredAuthTokenLifespan());
+            return new LoginResponse(loggedInUser, loggedInAuthToken);
+        }else{
+            return new LoginResponse(null, null);
+
+        }
     }
 
     public LogoutResponse logout(LogoutRequest request) {
-        if(request.getAuthToken() == null){
-            throw new RuntimeException("[Bad Request] Missing an authToken");
-        }
+        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
 
-        getUserDAO().logout(request.getAuthToken());
+        // remove the user's AuthToken from the database
+        daoFactory.getAuthTokenDAO().deleteAuthToken(request.getAuthToken());
+
         return new LogoutResponse();
     }
 
     public RegisterResponse register(RegisterRequest request) {
-        if(request.getUsername() == null){
-            throw new RuntimeException("[Bad Request] Missing a username");
-        } else if(request.getPassword() == null) {
-            throw new RuntimeException("[Bad Request] Missing a password");
-        } else if(request.getFirstName() == null) {
+        checkPassword(request.getUsername(), request.getPassword());
+
+        if (request.getFirstName() == null) {
             throw new RuntimeException("[Bad Request] Missing a first name");
-        } else if(request.getLastName() == null) {
+        } else if (request.getLastName() == null) {
             throw new RuntimeException("[Bad Request] Missing a last name");
-        } else if(request.getImage() == null) {
+        } else if (request.getImage() == null) {
             throw new RuntimeException("[Bad Request] Missing a profile image");
         }
 
-        Pair<User, AuthToken> pair = getUserDAO().register(request.getUsername(),
+
+
+        User registeredUser = daoFactory.getUserDAO().register(request.getUsername(),
                 request.getPassword(), request.getFirstName(), request.getLastName(),
                 request.getImage());
-        return new RegisterResponse(pair.getFirst(), pair.getSecond());
+        AuthToken loggedInAuthToken = daoFactory.getAuthTokenDAO().addAuthToken(request.getDesiredAuthTokenLifespan());
+        return new RegisterResponse(registeredUser, loggedInAuthToken);
     }
 
-    /**
-     * Returns an instance of {@link UserDAO}. Allows mocking of the UserDAO class
-     * for testing purposes. All usages of UserDAO should get their UserDAO
-     * instance from this method to allow for mocking of the instance.
-     *
-     * @return the instance.
-     */
-    UserDAO getUserDAO() {
-        return new UserDAO();
+    private void checkPassword(String userAlias, String password) {
+        if (userAlias == null) {
+            throw new RuntimeException("[Bad Request] Missing user alias");
+        } else if (password == null) {
+            throw new RuntimeException("[Bad Request] Missing password");
+        }
     }
 
-//    /**
-//     * Returns the dummy user to be returned by the login operation.
-//     * This is written as a separate method to allow mocking of the dummy user.
-//     *
-//     * @return a dummy user.
-//     */
-//    User getDummyUser() {
-//        return getFakeData().getFirstUser();
-//    }
-//
-//    /**
-//     * Returns the dummy auth token to be returned by the login operation.
-//     * This is written as a separate method to allow mocking of the dummy auth token.
-//     *
-//     * @return a dummy auth token.
-//     */
-//    AuthToken getDummyAuthToken() {
-//        return getFakeData().getAuthToken();
-//    }
-//
-//    /**
-//     * Returns the {@link FakeData} object used to generate dummy users and auth tokens.
-//     * This is written as a separate method to allow mocking of the {@link FakeData}.
-//     *
-//     * @return a {@link FakeData} instance.
-//     */
-//    FakeData getFakeData() {
-//        return FakeData.getInstance();
-//    }
 }

@@ -2,17 +2,14 @@ package edu.byu.cs.tweeter.model.net.request;
 
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.Status;
+import edu.byu.cs.tweeter.model.domain.User;
 
 /**
  * Contains all the information needed to make a request to have the server return the next page of
  * followees for a specified follower.
  */
-public class GetStoryRequest {
-
-    private AuthToken authToken;
-    private String userAlias;
-    private int limit;
-    private Status lastStatus;
+public class GetStoryRequest extends PaginatedRequest<Status> {
+    private User targetUser;
 
     /**
      * Allows construction of the object from Json. Private so it won't be called in normal code.
@@ -22,86 +19,53 @@ public class GetStoryRequest {
     /**
      * Creates an instance.
      *
-     * @param userAlias the alias of the user whose story/statuses  are to be returned.
-     * @param limit the maximum number of statuses to return.
+     * @param authToken the AuthToken of the current user (whose is logged in and making the request)
+     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
+     * @param targetUser the user whose story this request will retrieve
+     * @param limit the maximum number of items to return at a time (pageSize)
      * @param lastStatus the last status that was returned in the previous request (null if
      *                     there was no previous request or if no statuses were returned in the
      *                     previous request).
      */
-    public GetStoryRequest(AuthToken authToken, String userAlias, int limit, Status lastStatus) {
-        this.authToken = authToken;
-        this.userAlias = userAlias;
-        this.limit = limit;
-        this.lastStatus = lastStatus;
+    public GetStoryRequest(AuthToken authToken, String currUserAlias, User targetUser, int limit, Status lastStatus) {
+        super(authToken, currUserAlias, limit, lastStatus);
+
+        this.targetUser = targetUser;
     }
 
     /**
-     * Returns the auth token of the user who is making the request.
+     * Returns the target user whose story is to be returned by this request.
      *
-     * @return the auth token.
+     * @return the target user.
      */
-    public AuthToken getAuthToken() {
-        return authToken;
+    public User getTargetUser() {
+        return targetUser;
     }
 
     /**
-     * Sets the auth token.
+     * Sets the target user.
      *
-     * @param authToken the auth token.
+     * @param targetUser the user whose story is to be returned by this request.
      */
-    public void setAuthToken(AuthToken authToken) {
-        this.authToken = authToken;
+    public void setTargetUser(User targetUser) {
+        this.targetUser = targetUser;
     }
 
     /**
-     * Returns the follower whose followees are to be returned by this request.
+     * Returns the alias of the target user whose story is to be returned by this request.
      *
-     * @return the follower.
+     * @return the target user's alias.
      */
-    public String getUserAlias() {
-        return userAlias;
+    public String getTargetUserAlias() {
+        return targetUser.getAlias();
     }
 
     /**
-     * Sets the follower.
+     * Sets the target user's alias.
      *
-     * @param followerAlias the follower.
+     * @param targetUserAlias the alias of the user whose story is to be returned by this request.
      */
-    public void setUserAlias(String followerAlias) {
-        this.userAlias = followerAlias;
-    }
-
-    /**
-     * Returns the number of statuses that will be included with this request (pageSize)
-     * @return the limit (pageSize).
-     */
-    public int getLimit() {
-        return limit;
-    }
-
-    /**
-     * Sets the number of statuses that will be returned by this request (pageSize)
-     *
-     */
-    public void setLimit(int limit) {
-        this.limit = limit;
-    }
-
-    /**
-     * Returns the last that was returned by the previous page/request.
-     *
-     * @return the status.
-     */
-    public Status getLastStatus() {
-        return lastStatus;
-    }
-
-    /**
-     * Sets the lastStatus.
-     *
-     * @param lastStatus the last status.
-     */
-    public void setLastStatus(Status lastStatus) {
-        this.lastStatus = lastStatus;
+    public void setTargetUserAlias(String targetUserAlias) {
+        this.targetUser.setAlias(targetUserAlias);
     }
 }

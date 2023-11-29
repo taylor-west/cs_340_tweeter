@@ -21,17 +21,21 @@ public class GetFollowingCountTask extends GetCountTask {
 
     private int count;
 
-    public GetFollowingCountTask(AuthToken authToken, User targetUser, Handler messageHandler) {
+    public GetFollowingCountTask(AuthToken authToken, User currUser, User targetUser, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
+        this.currUser = currUser;
         this.targetUser = targetUser;
     }
 
     public void performTask() {
 
         try {
-            GetFollowingCountRequest request = new GetFollowingCountRequest(authToken, targetUser.getAlias());
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
+            String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
+
+            GetFollowingCountRequest request = new GetFollowingCountRequest(authToken, currUserAlias, targetUserAlias);
             GetFollowingCountResponse response = getServerFacade().getFollowingCount(request, FollowService.getFollowingCountUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {

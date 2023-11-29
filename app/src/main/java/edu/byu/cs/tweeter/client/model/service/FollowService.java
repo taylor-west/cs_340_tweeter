@@ -53,8 +53,8 @@ public class FollowService {
      * @param pageSize the maximum number of followees to return.
      * @param lastFollowee the last followee returned in the previous request (can be null).
      */
-    public void getFollowing(AuthToken authToken, User targetUser, int pageSize, User lastFollowee, PagedObserver<User> observer) {
-        GetFollowingTask getFollowingTask = getGetFollowingTask(authToken, targetUser, pageSize, lastFollowee, observer);
+    public void getFollowing(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollowee, PagedObserver<User> observer) {
+        GetFollowingTask getFollowingTask = getGetFollowingTask(authToken, currUser, targetUser, pageSize, lastFollowee, observer);
         BackgroundTaskUtils.runTask(getFollowingTask);
     }
 
@@ -70,8 +70,8 @@ public class FollowService {
      * @param authToken the session auth token.
      * @param targetUser the user for whom followees are being retrieved.
      */
-    public void getFollowingCount(AuthToken authToken, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
-        GetFollowingCountTask getFollowingCountTask = getGetFollowingCountTask(authToken, targetUser, observer);
+    public void getFollowingCount(AuthToken authToken, User currUser, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
+        GetFollowingCountTask getFollowingCountTask = getGetFollowingCountTask(authToken, currUser, targetUser, observer);
         BackgroundTaskUtils.runTask(getFollowingCountTask);
     }
 
@@ -79,8 +79,8 @@ public class FollowService {
         return USER_URL_PATH+ "/" + userAlias + FOLLOWING_URL_PATH + COUNT_URL_PATH;
     }
 
-    public void getFollowers(AuthToken authToken, User targetUser, int pageSize, User lastFollower, PagedObserver<User> observer) {
-        GetFollowersTask getFollowersTask = getGetFollowersTask(authToken, targetUser, pageSize, lastFollower, observer);
+    public void getFollowers(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollower, PagedObserver<User> observer) {
+        GetFollowersTask getFollowersTask = getGetFollowersTask(authToken, currUser, targetUser, pageSize, lastFollower, observer);
         BackgroundTaskUtils.runTask(getFollowersTask);
     }
 
@@ -88,8 +88,8 @@ public class FollowService {
         return USER_URL_PATH + "/" + userAlias + FOLLOWERS_URL_PATH;
     }
 
-    public void getFollowersCount(AuthToken authToken, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
-        GetFollowersCountTask getFollowersCountTask = getGetFollowersCountTask(authToken, targetUser, observer);
+    public void getFollowersCount(AuthToken authToken, User currUser, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
+        GetFollowersCountTask getFollowersCountTask = getGetFollowersCountTask(authToken, currUser, targetUser, observer);
         BackgroundTaskUtils.runTask(getFollowersCountTask);
     }
 
@@ -97,8 +97,8 @@ public class FollowService {
         return USER_URL_PATH + "/" + userAlias + FOLLOWERS_URL_PATH + COUNT_URL_PATH;
     }
 
-    public void isFollower(AuthToken currUserAuthToken, User currentUser, User selectedUser, IsFollowerObserver observer) {
-        IsFollowerTask isFollowerTask = getIsFollowerTask(currUserAuthToken, currentUser, selectedUser, observer);
+    public void isFollower(AuthToken currUserAuthToken, User currUser, User follower, User followee, IsFollowerObserver observer) {
+        IsFollowerTask isFollowerTask = getIsFollowerTask(currUserAuthToken, currUser, follower, followee, observer);
         BackgroundTaskUtils.runTask(isFollowerTask);
     }
 
@@ -106,10 +106,10 @@ public class FollowService {
         return USER_URL_PATH + "/" + followerAlias + IS_FOLLOWER_URL_PATH + "/" + followeeAlias;
     }
 
-    public void follow(AuthToken currUserAuthToken, User currentUser, User selectedUser, FollowObserver observer) {
-        FollowTask followTask = getFollowTask(currUserAuthToken, currentUser, selectedUser, observer);
+    public void follow(AuthToken currUserAuthToken, User currUser,  User follower, User followee, FollowObserver observer) {
+        FollowTask followTask = getFollowTask(currUserAuthToken, currUser, follower, followee, observer);
         BackgroundTaskUtils.runTask(followTask);
-        observer.startingFollow(selectedUser);
+        observer.startingFollow(followee);
     }
 
     public static String getFollowUrlPath(String followerAlias, String followeeAlias){
@@ -117,10 +117,10 @@ public class FollowService {
     }
 
 
-    public void unfollow(AuthToken currUserAuthToken, User currentUser, User selectedUser, UnfollowObserver observer) {
-        UnfollowTask unfollowTask = getUnfollowTask(currUserAuthToken, currentUser, selectedUser, observer);
+    public void unfollow(AuthToken currUserAuthToken, User currUser, User follower, User followee, UnfollowObserver observer) {
+        UnfollowTask unfollowTask = getUnfollowTask(currUserAuthToken, currUser, follower, followee, observer);
         BackgroundTaskUtils.runTask(unfollowTask);
-        observer.startingUnfollow(selectedUser);
+        observer.startingUnfollow(followee);
     }
 
     public static String getUnfollowUrlPath(String followerAlias, String followeeAlias) {
@@ -136,9 +136,9 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public GetFollowingTask getGetFollowingTask(AuthToken authToken, User targetUser, int pageSize, User lastFollowee, PagedObserver<User> observer) {
+    public GetFollowingTask getGetFollowingTask(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollowee, PagedObserver<User> observer) {
 //        return new GetFollowingTask(this, authToken, targetUser, pageSize, lastFollowee, new GetFollowingTaskHandler(observer));/
-        return new GetFollowingTask(authToken, targetUser, pageSize, lastFollowee, new PagedHandler<User>(observer, "get following", GetFollowingTask.FOLLOWEES_KEY));
+        return new GetFollowingTask(authToken, currUser, targetUser, pageSize, lastFollowee, new PagedHandler<User>(observer, "get following", GetFollowingTask.FOLLOWEES_KEY));
     }
 
     /**
@@ -149,8 +149,8 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public GetFollowingCountTask getGetFollowingCountTask(AuthToken authToken, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
-        return new GetFollowingCountTask(authToken, targetUser, new GetFollowingCountHandler(observer, "get following count"));
+    public GetFollowingCountTask getGetFollowingCountTask(AuthToken authToken, User currUser, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
+        return new GetFollowingCountTask(authToken, currUser, targetUser, new GetFollowingCountHandler(observer, "get following count"));
     }
 
 
@@ -162,8 +162,8 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public GetFollowersTask getGetFollowersTask(AuthToken authToken, User targetUser, int pageSize, User lastFollower, PagedObserver<User> observer) {
-        return new GetFollowersTask(authToken, targetUser, pageSize, lastFollower, new PagedHandler<User>(observer, "get followers", GetFollowersTask.FOLLOWERS_KEY));
+    public GetFollowersTask getGetFollowersTask(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollower, PagedObserver<User> observer) {
+        return new GetFollowersTask(authToken, currUser, targetUser, pageSize, lastFollower, new PagedHandler<User>(observer, "get followers", GetFollowersTask.FOLLOWERS_KEY));
     }
 
     /**
@@ -174,8 +174,8 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public GetFollowersCountTask getGetFollowersCountTask(AuthToken authToken, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
-        return new GetFollowersCountTask(authToken, targetUser, new GetFollowersCountHandler(observer, "get followers count"));
+    public GetFollowersCountTask getGetFollowersCountTask(AuthToken authToken, User currUser, User targetUser, UpdateFolloweesAndFollowersObserver observer) {
+        return new GetFollowersCountTask(authToken, currUser, targetUser, new GetFollowersCountHandler(observer, "get followers count"));
     }
 
     /**
@@ -186,11 +186,11 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public IsFollowerTask getIsFollowerTask(AuthToken currUserAuthToken,
-                                            User currentUser, User selectedUser,
+    public IsFollowerTask getIsFollowerTask(AuthToken authToken,
+                                            User currUser, User follower, User followee,
                                             IsFollowerObserver observer) {
 //        return new IsFollowerTask(authToken, targetUser, pageSize, lastFollower, new PagedHandler<User>(observer, "get followers", GetFollowersTask.FOLLOWERS_KEY));
-        return new IsFollowerTask(currUserAuthToken, currentUser, selectedUser,
+        return new IsFollowerTask(authToken, currUser, follower, followee,
                                     new IsFollowerHandler(observer));
     }
 
@@ -202,10 +202,10 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public FollowTask getFollowTask(AuthToken currUserAuthToken, User currentUser,
-                                    User selectedUser, FollowObserver observer) {
-        return new FollowTask(currUserAuthToken, currentUser.getAlias(), selectedUser.getAlias(),
-                new FollowHandler(currUserAuthToken, selectedUser, currentUser, observer));
+    public FollowTask getFollowTask(AuthToken currUserAuthToken, User currUser, User follower,
+                                    User followee, FollowObserver observer) {
+        return new FollowTask(currUserAuthToken, currUser, follower, followee,
+                new FollowHandler(currUserAuthToken, followee, follower, observer));
     }
 
     /**
@@ -216,9 +216,9 @@ public class FollowService {
      * @return the instance.
      */
     // This method is public so it can be accessed by test cases
-    public UnfollowTask getUnfollowTask(AuthToken currUserAuthToken, User currentUser,
-                                        User selectedUser, UnfollowObserver observer) {
-        return new UnfollowTask(currUserAuthToken, currentUser, selectedUser,
-                new UnfollowHandler(currUserAuthToken, selectedUser, currentUser, observer));
+    public UnfollowTask getUnfollowTask(AuthToken currUserAuthToken, User currUser, User follower,
+                                        User followee, UnfollowObserver observer) {
+        return new UnfollowTask(currUserAuthToken, currUser, follower, followee,
+                new UnfollowHandler(currUserAuthToken, followee, follower, observer));
     }
 }

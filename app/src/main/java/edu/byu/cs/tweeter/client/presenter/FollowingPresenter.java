@@ -94,12 +94,13 @@ public class FollowingPresenter extends PagedPresenter<User> implements PagedObs
      * operation.
      *
      * @param authToken the session auth token.
+     * @param currUser the user that is currently logged in
      * @param targetUser the user for whom followees are being retrieved.
      * @param pageSize the maximum number of followees to return.
      * @param lastFollowee the last followee returned in the previous request (can be null).
      */
-    public void getItems(AuthToken authToken, User targetUser, int pageSize, User lastFollowee) {
-        getFollowingService().getFollowing(authToken, targetUser, pageSize, lastFollowee, this);
+    public void getItems(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollowee) {
+        getFollowingService().getFollowing(authToken, currUser, targetUser, pageSize, lastFollowee, this);
     }
 
     /**

@@ -35,11 +35,12 @@ public class GetStoryTask extends PagedTask<Status> {
     private boolean hasMorePages;
 
 
-    public GetStoryTask(AuthToken authToken, User targetUser, int limit, Status lastStatus,
+    public GetStoryTask(AuthToken authToken, User currUser, User targetUser, int limit, Status lastStatus,
                         Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
+        this.currUser = currUser;
         this.targetUser = targetUser;
         this.limit = limit;
         this.lastItem = lastStatus;
@@ -49,16 +50,14 @@ public class GetStoryTask extends PagedTask<Status> {
 
 
         try {
-            GetStoryRequest request = new GetStoryRequest(authToken, targetUser.getAlias(), limit, lastItem);
+            String currUserAlias = currUser == null ? null : currUser.getAlias();
+
+            GetStoryRequest request = new GetStoryRequest(authToken, currUserAlias, targetUser, limit, lastItem);
             GetStoryResponse response = getServerFacade().getStory(request, StatusService.getStoryUrl(targetUser.getAlias()));
 
             if (response.isSuccess()) {
                 this.statuses = response.getStatuses();
                 this.hasMorePages = response.getHasMorePages();
-//                    Pair<List<Status>, Boolean> pageOfItems = getFakeData().getPageOfStatus(lastItem, limit);
-//                    this.statuses = pageOfItems.getFirst();
-//                    this.hasMorePages = pageOfItems.getSecond();
-
                 sendSuccessMessage();
             } else {
                 sendFailedMessage(response.getMessage());

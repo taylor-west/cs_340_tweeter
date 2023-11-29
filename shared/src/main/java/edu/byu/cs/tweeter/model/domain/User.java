@@ -22,6 +22,13 @@ public class User implements Comparable<User>, Serializable {
         this(firstName, lastName, String.format("@%s%s", firstName, lastName), imageURL);
     }
 
+    /**
+     * Creates a User instance
+     * @param firstName
+     * @param lastName
+     * @param alias
+     * @param imageURL
+     */
     public User(String firstName, String lastName, String alias, String imageURL) {
         this.firstName = firstName;
         this.lastName = lastName;
