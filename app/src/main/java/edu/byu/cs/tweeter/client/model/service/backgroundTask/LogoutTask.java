@@ -23,14 +23,11 @@ public class LogoutTask extends AuthenticatedTask {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
     }
 
     public void performTask() {
         try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
-
-            LogoutRequest request = new LogoutRequest(authToken, currUserAlias);
+            LogoutRequest request = new LogoutRequest(authToken);
             LogoutResponse response = getServerFacade().logout(request, UserService.getLogoutUrlPath());
 
             if (response.isSuccess()) {

@@ -12,7 +12,9 @@ public class IsFollowerHandler extends ServiceHandler<IsFollowerObserver> {
 
     @Override
     protected void handleSuccess(Message msg) {
+        System.out.println("NOW IN IsFollowerHandler (data=" + msg.getData() + ")");
         boolean isFollower = msg.getData().getBoolean(IsFollowerTask.IS_FOLLOWER_KEY);
+        System.out.println("  IsFollowerHandler.handleSuccess: isFollower=" + isFollower + ")");
         observer.isFollowerSucceeded(isFollower);
     }
 }

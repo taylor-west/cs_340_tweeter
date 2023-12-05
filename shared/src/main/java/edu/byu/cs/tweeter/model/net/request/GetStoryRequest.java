@@ -20,15 +20,14 @@ public class GetStoryRequest extends PaginatedRequest<Status> {
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (whose is logged in and making the request)
-     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
      * @param targetUser the user whose story this request will retrieve
      * @param limit the maximum number of items to return at a time (pageSize)
      * @param lastStatus the last status that was returned in the previous request (null if
      *                     there was no previous request or if no statuses were returned in the
      *                     previous request).
      */
-    public GetStoryRequest(AuthToken authToken, String currUserAlias, User targetUser, int limit, Status lastStatus) {
-        super(authToken, currUserAlias, limit, lastStatus);
+    public GetStoryRequest(AuthToken authToken, User targetUser, int limit, Status lastStatus) {
+        super(authToken, limit, lastStatus);
 
         this.targetUser = targetUser;
     }

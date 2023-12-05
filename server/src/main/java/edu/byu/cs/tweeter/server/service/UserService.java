@@ -12,7 +12,7 @@ import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 import edu.byu.cs.tweeter.model.net.response.LogoutResponse;
 import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
 import edu.byu.cs.tweeter.server.dao.factories.DAOFactory;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import edu.byu.cs.tweeter.server.dao.interfaces.UserDAO;
 
 public class UserService extends Service {
 
@@ -21,7 +21,7 @@ public class UserService extends Service {
     }
 
     public GetUserResponse getUser(GetUserRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
         if (request.getTargetUserAlias() == null) {
             throw new RuntimeException("[Bad Request] Error in UserService.getUser: target user alias '" + request.getTargetUserAlias() + "' does not exist");
         }
@@ -46,7 +46,7 @@ public class UserService extends Service {
     }
 
     public LogoutResponse logout(LogoutRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
 
         // remove the user's AuthToken from the database
         daoFactory.getAuthTokenDAO().deleteAuthToken(request.getAuthToken());
@@ -55,22 +55,26 @@ public class UserService extends Service {
     }
 
     public RegisterResponse register(RegisterRequest request) {
+        System.out.println("in UserService.register with request {" + request.toString() + "}");
         checkPassword(request.getUsername(), request.getPassword());
 
         if (request.getFirstName() == null) {
             throw new RuntimeException("[Bad Request] Missing a first name");
         } else if (request.getLastName() == null) {
             throw new RuntimeException("[Bad Request] Missing a last name");
-        } else if (request.getImage() == null) {
+        } else if (request.getImageByteString() == null) {
             throw new RuntimeException("[Bad Request] Missing a profile image");
         }
+        System.out.println("  register(): user info is valid");
 
-
-
-        User registeredUser = daoFactory.getUserDAO().register(request.getUsername(),
+        UserDAO dao = daoFactory.getUserDAO();
+        System.out.println("  register(): finished getting UserDAO instance");
+        User registeredUser = dao.register(request.getUsername(),
                 request.getPassword(), request.getFirstName(), request.getLastName(),
-                request.getImage());
+                request.getImageByteString());
+        System.out.println("  register(): finished userDAO.register(). User=(" + registeredUser.toString() + ")");
         AuthToken loggedInAuthToken = daoFactory.getAuthTokenDAO().addAuthToken(request.getDesiredAuthTokenLifespan());
+        System.out.println("  register(): finished authTokenDAO.addAuthToken(). AuthToken=(" + loggedInAuthToken.toString() + ")");
         return new RegisterResponse(registeredUser, loggedInAuthToken);
     }
 

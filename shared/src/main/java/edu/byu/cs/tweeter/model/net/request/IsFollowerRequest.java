@@ -15,12 +15,11 @@ public class IsFollowerRequest extends AuthenticatedRequest{
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (whose is logged in and making the request)
-     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
      * @param followerAlias the alias of the follower (user that is going to be following the followee)
      * @param followeeAlias the alias of the followee (user that is going to be followed by the follower)
      */
-    public IsFollowerRequest(AuthToken authToken, String currUserAlias, String followerAlias, String followeeAlias) {
-        super(authToken, currUserAlias);
+    public IsFollowerRequest(AuthToken authToken, String followerAlias, String followeeAlias) {
+        super(authToken);
 
         this.followerAlias = followerAlias;
         this.followeeAlias = followeeAlias;
@@ -66,7 +65,6 @@ public class IsFollowerRequest extends AuthenticatedRequest{
     public String toString() {
         return "FollowRequest{" +
                 "authToken=" + getAuthToken() +
-                ", currUserAlias=" + getCurrUserAlias() +
                 ", followerAlias=" + getFollowerAlias() +
                 ", followeeAlias=" + getFolloweeAlias() +
                 '}';

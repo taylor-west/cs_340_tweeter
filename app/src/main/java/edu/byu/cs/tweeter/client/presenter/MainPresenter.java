@@ -120,6 +120,7 @@ public class MainPresenter extends BasePresenter implements
     //// Check if IsFollower ////
     // required by IsFollowerObserver
     public void checkIsFollower(User selectedUser, User currentUser, AuthToken currUserAuthToken) {
+        System.out.println("NOW IN checkIsFollower");
         if (selectedUser.compareTo(currentUser) == 0) {
             getView().showFollowButton(false);
             getView().isFollowing(false);
@@ -129,12 +130,14 @@ public class MainPresenter extends BasePresenter implements
             getView().isFollowing(true);
 
             FollowService followService = new FollowService();
-            followService.isFollower(currUserAuthToken, Cache.getInstance().getCurrUser(), currentUser, selectedUser, this);
+            followService.isFollower(currUserAuthToken, currentUser, selectedUser, this);
         }
     }
 
     @Override
     public void isFollowerSucceeded(boolean isFollower) {
+        System.out.println("NOW IN isFollowerSucceeded (isFollower=" + isFollower + ")");
+
         // If logged in user if a follower of the selected user, display the follow button as "following"
         getView().isFollowing(isFollower);
     }
@@ -148,10 +151,10 @@ public class MainPresenter extends BasePresenter implements
 
         if (followButtonText.equals(followingString)) {
             // already following, so we UNFOLLOW
-            followService.unfollow(currUserAuthToken, Cache.getInstance().getCurrUser(), selectedUser, currUser, this);
+            followService.unfollow(currUserAuthToken, currUser, selectedUser, this);
         } else {
             // not current following, so we FOLLOW
-            followService.follow(currUserAuthToken, Cache.getInstance().getCurrUser(), selectedUser, currUser, this);
+            followService.follow(currUserAuthToken, currUser, selectedUser, this);
         }
     }
     ////////////////
@@ -160,7 +163,7 @@ public class MainPresenter extends BasePresenter implements
     // required by FollowObserver
 
     /**
-     * Informs the View that a Ffollow action is taking place (displays infoMessage).
+     * Informs the View that a Follow action is taking place (displays infoMessage).
      * Required by FollowObserver. Used in the Follow/Unfollow flow.
      *
      * @param selectedUser

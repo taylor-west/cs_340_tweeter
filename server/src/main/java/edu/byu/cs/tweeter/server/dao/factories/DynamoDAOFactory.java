@@ -21,8 +21,11 @@ public class DynamoDAOFactory implements DAOFactory {
      */
     @Override
     public DynamoUserDAO getUserDAO() {
+        System.out.println("in DynamoDAOFactory.getUserDAO");
         if(userDAO == null){
+            System.out.println("  getUserDAO: creating new instance of DynamoUserDAO...");
             this.userDAO = new DynamoUserDAO();
+            System.out.println("  getUserDAO: finished creating new instance of DynamoUserDAO");
         }
             return userDAO;
     }

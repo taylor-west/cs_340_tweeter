@@ -15,12 +15,11 @@ public class UnfollowRequest extends AuthenticatedRequest{
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (follower)
-     * @param currUserAlias the alias of the current user (the logged in user making the request)
      * @param followerAlias the alias of the follower (user that is was following the followee)
      * @param followeeAlias the alias of the followee (user that is was followed by the follower)
      */
-    public UnfollowRequest(AuthToken authToken, String currUserAlias, String followerAlias, String followeeAlias) {
-        super(authToken, currUserAlias);
+    public UnfollowRequest(AuthToken authToken, String followerAlias, String followeeAlias) {
+        super(authToken);
 
         this.followerAlias = followerAlias;
         this.followeeAlias = followeeAlias;
@@ -66,7 +65,6 @@ public class UnfollowRequest extends AuthenticatedRequest{
     public String toString() {
         return "UnfollowRequest{" +
                 "authToken=" + getAuthToken() +
-                ", currUserAlias=" + getCurrUserAlias() +
                 ", followerAlias=" + getFollowerAlias() +
                 ", followeeAlias=" + getFolloweeAlias() +
                 '}';

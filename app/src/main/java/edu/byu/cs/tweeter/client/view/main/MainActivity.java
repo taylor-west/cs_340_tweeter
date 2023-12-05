@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
 
         followButton = findViewById(R.id.followButton);
 
+        System.out.println("CHECKING isFollower (MainActivity)");
         presenter.checkIsFollower(selectedUser, Cache.getInstance().getCurrUser(),
                 Cache.getInstance().getCurrUserAuthToken());
 

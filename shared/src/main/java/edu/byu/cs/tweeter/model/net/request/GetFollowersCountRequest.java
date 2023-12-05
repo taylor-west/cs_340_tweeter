@@ -19,11 +19,10 @@ public class GetFollowersCountRequest extends AuthenticatedRequest {
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (should be the follower)
-     * @param currUserAlias the alias of the current user (logged in performing the request)
      * @param followeeAlias the alias of the user whose followers are being counted.
      */
-    public GetFollowersCountRequest(AuthToken authToken, String currUserAlias, String followeeAlias) {
-        super(authToken, currUserAlias);
+    public GetFollowersCountRequest(AuthToken authToken, String followeeAlias) {
+        super(authToken);
 
         this.followeeAlias = followeeAlias;
     }
@@ -51,7 +50,6 @@ public class GetFollowersCountRequest extends AuthenticatedRequest {
     public String toString() {
         return "GetFollowingCountRequest{" +
                 "authToken=" + getAuthToken() +
-                ", currUserAlias=" + getCurrUserAlias() +
                 ", followeeAlias='" + getFolloweeAlias() + '\'' +
                 '}';
     }

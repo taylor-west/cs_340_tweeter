@@ -19,8 +19,8 @@ public class PostStatusRequest extends AuthenticatedRequest {
      * @param targetUserAlias the alias of the target user (user who is posting the status).
      * @param status the status that the user will post.
      */
-    public PostStatusRequest(AuthToken authToken, String currUserAlias, String targetUserAlias, Status status) {
-        super(authToken, currUserAlias);
+    public PostStatusRequest(AuthToken authToken, String targetUserAlias, Status status) {
+        super(authToken);
 
         this.targetUserAlias = targetUserAlias;
         this.status = status;
@@ -47,7 +47,6 @@ public class PostStatusRequest extends AuthenticatedRequest {
     public String toString() {
         return "PostStatusRequest{" +
                 "authToken=" + getAuthToken() +
-                ", currUserAlias=" + getCurrUserAlias() +
                 ", targetUserAlias='" + getTargetUserAlias() + '\'' +
                 ", status=" + status.hashCode() +
                 '}';

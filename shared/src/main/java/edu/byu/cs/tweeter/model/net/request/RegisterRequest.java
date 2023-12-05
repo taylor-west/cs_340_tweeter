@@ -14,7 +14,7 @@ public class RegisterRequest extends UnauthenticatedRequest{
     /**
      * The base-64 encoded bytes of the user's profile image.
      */
-    private String image;
+    private String imageByteString;
 
     /**
      * Allows construction of the object from Json. Private so it won't be called in normal code.
@@ -27,14 +27,14 @@ public class RegisterRequest extends UnauthenticatedRequest{
      * @param password The user's password
      * @param firstName The user's first name
      * @param lastName The user's last name
-     * @param image The user's profile picture (encoded as a string)
+     * @param imageByteString The user's profile picture (encoded as a string)
      */
-    public RegisterRequest(String username, String password, String firstName, String lastName, String image) {
+    public RegisterRequest(String username, String password, String firstName, String lastName, String imageByteString) {
         super(username, password, DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS);
 
         this.firstName = firstName;
         this.lastName = lastName;
-        this.image = image;
+        this.imageByteString = imageByteString;
     }
 
     /**
@@ -78,16 +78,25 @@ public class RegisterRequest extends UnauthenticatedRequest{
      *
      * @return the user's profile image.
      */
-    public String getImage() {
-        return image;
+    public String getImageByteString() {
+        return imageByteString;
     }
 
     /**
      * Sets the user's profile image.
      *
-     * @param image the user's profile image.
+     * @param imageByteString the user's profile image.
      */
-    public void setImage(String image) {
-        this.image = image;
+    public void setImageByteString(String imageByteString) {
+        this.imageByteString = imageByteString;
+    }
+
+    @Override
+    public String toString() {
+        return "RegisterRequest{" +
+                "firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", imageByteString='" + imageByteString + '\'' +
+                '}';
     }
 }

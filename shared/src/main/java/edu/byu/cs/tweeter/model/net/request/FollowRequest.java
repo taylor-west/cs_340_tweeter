@@ -16,12 +16,11 @@ public class FollowRequest extends AuthenticatedRequest {
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (should be the follower)
-     * @param currUserAlias the alias of the current user (logged in performing the request)
      * @param follower the User that is going to be following the followee
      * @param followee the User that is going to be followed by the follower
      */
-    public FollowRequest(AuthToken authToken, String currUserAlias, User follower, User followee) {
-        super(authToken, currUserAlias);
+    public FollowRequest(AuthToken authToken, User follower, User followee) {
+        super(authToken);
 
         this.follower = follower;
         this.followee = followee;
@@ -95,12 +94,14 @@ public class FollowRequest extends AuthenticatedRequest {
         this.followee.setAlias(followeeAlias);
     }
 
+
+
     @Override
     public String toString() {
         return "FollowRequest{" +
                 "authToken=" + getAuthToken() +
-                ", follower=" + this.follower.toString() +
-                ", followee=" + this.followee.toString() +
+                ", follower=" + getFollower().toString() +
+                ", followee=" + getFollowee().toString() +
                 '}';
     }
 }

@@ -20,7 +20,7 @@ public class TweeterFeeds implements DynamoTweeterTable {
    /**
     *  The name of the primary index for the TweeterFollows table.
     */
-   private static final String INDEX_NAME = ""; //TODO: add index name
+   private static final String INDEX_NAME = "feedOwnerAlias"; //TODO: add index name
 
    /**
     *  The name of the attribute that is the partition key of primary index for the TweeterFeeds DynamoDB table.
@@ -38,7 +38,7 @@ public class TweeterFeeds implements DynamoTweeterTable {
    private String feedOwnerAlias; // primary partition key
    private String uniqueHash; //primary sort key
    private String post;
-   private Number postTimestamp;
+   private Long postTimestamp;
    private String postedTimeString;
    private String postUserAlias;
    private String postUserFirstName;
@@ -51,8 +51,8 @@ public class TweeterFeeds implements DynamoTweeterTable {
 
 //////// CONSTRUCTOR ////////
 
-
-   public TweeterFeeds(String feedOwnerAlias, String post, Number postTimestamp, String postedTimeString, String postUserAlias, String postUserFirstName, String postUserLastName, String postUserImageURL, List<String> postUrls, List<String> postMentions) {
+   public TweeterFeeds(){};
+   public TweeterFeeds(String feedOwnerAlias, String post, Long postTimestamp, String postedTimeString, String postUserAlias, String postUserFirstName, String postUserLastName, String postUserImageURL, List<String> postUrls, List<String> postMentions) {
       this.feedOwnerAlias = feedOwnerAlias;
       this.uniqueHash = makeHash(postTimestamp, postUserAlias, post);
       this.post = post;
@@ -94,11 +94,11 @@ public class TweeterFeeds implements DynamoTweeterTable {
       this.post = post;
    }
 
-   public Number getPostTimestamp() {
+   public Long getPostTimestamp() {
       return postTimestamp;
    }
 
-   public void setPostTimestamp(Number postTimestamp) {
+   public void setPostTimestamp(Long postTimestamp) {
       this.postTimestamp = postTimestamp;
    }
 
@@ -225,7 +225,7 @@ public class TweeterFeeds implements DynamoTweeterTable {
    }
 
 //////// ADDITIONAL METHODS ////////
-   public static String makeHash(Number postTimestamp, String postUserAlias, String post) {
+   public static String makeHash(Long postTimestamp, String postUserAlias, String post) {
       String joinedText =  (postTimestamp.toString() + postUserAlias + ": " + post);
       return joinedText;
    }

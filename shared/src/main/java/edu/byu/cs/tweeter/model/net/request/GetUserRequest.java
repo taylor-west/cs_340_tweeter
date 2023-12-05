@@ -20,11 +20,10 @@ public class GetUserRequest extends AuthenticatedRequest{
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (whose is logged in and making the request)
-     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
      * @param targetUserAlias the alias of the user whose story/statuses  are to be returned.
      */
-    public GetUserRequest(AuthToken authToken, String currUserAlias, String targetUserAlias) {
-        super(authToken, currUserAlias);
+    public GetUserRequest(AuthToken authToken, String targetUserAlias) {
+        super(authToken);
 
         this.targetUserAlias = targetUserAlias;
     }
@@ -51,7 +50,6 @@ public class GetUserRequest extends AuthenticatedRequest{
     public String toString() {
         return "GetUserRequest{" +
                 "authToken=" + getAuthToken() +
-                "currUserAlias=" + getCurrUserAlias() +
                 ", targetUserAlias='" + getTargetUserAlias() + '\'' +
                 '}';
     }

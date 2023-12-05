@@ -16,7 +16,7 @@ public class RegisterHandler implements RequestHandler<RegisterRequest, Register
     @Override
     public RegisterResponse handleRequest(RegisterRequest registerRequest, Context context) {
         UserService userService = new UserService(new DynamoDAOFactory());
-        System.out.println("LoginHandler has received a request: " + registerRequest.toString());
+        System.out.println("RegisterHandler has received a request: " + registerRequest.toString());
         return userService.register(registerRequest);
     }
 }

@@ -33,21 +33,7 @@ public class TweeterUsers implements DynamoTweeterTable {
     private int followersCount;
     private int followingCount;
 
-
-
-//////// CONSTRUCTOR ////////
-    public TweeterUsers(String alias, String firstName, String lastName, String passwordHash, String imageURL) {
-        this.alias = alias;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.passwordHash = passwordHash;
-        this.imageURL = imageURL;
-        this.followersCount = 0;
-        this.followingCount = 0;
-    }
-
-
-//////// GETTERS AND SETTERS ////////
+    //////// GETTERS AND SETTERS ////////
     @DynamoDbPartitionKey
     public String getAlias() {
         return alias;

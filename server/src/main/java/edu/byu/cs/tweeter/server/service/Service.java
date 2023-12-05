@@ -11,19 +11,18 @@ public abstract class Service {
         this.daoFactory = daoFactory;
     }
 
-    protected void checkAuthToken(AuthToken authToken, String userAlias){
+    protected void checkAuthToken(AuthToken authToken){
         if(authToken == null) {
-            throw new RuntimeException("[AuthError] Missing AuthToken");
-        }else if(userAlias == null) {
-            throw new RuntimeException("[AuthError] Missing user alias with which to validate AuthToken");
+            throw new RuntimeException("[Bad Request] Missing AuthToken");
         }
 
         boolean authTokenIsValid = daoFactory.getAuthTokenDAO().verifyAuthTokenIsValid(authToken);
+        System.out.println("Service.checkAuthToken: authTokenIsValid=" + authTokenIsValid);
         if(authTokenIsValid){
             daoFactory.getAuthTokenDAO().refreshAuthToken(authToken);
         }else{
             daoFactory.getAuthTokenDAO().deleteAuthToken(authToken);
-            throw new RuntimeException("[AuthError] Invalid AuthToken");
+            throw new RuntimeException("[Bad Request] Invalid AuthToken");
         }
     }
 

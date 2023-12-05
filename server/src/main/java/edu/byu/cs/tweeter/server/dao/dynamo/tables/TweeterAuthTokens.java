@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.server.dao.dynamo.tables;
 
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+import software.amazon.awssdk.services.dynamodb.endpoints.internal.Value;
 
 @DynamoDbBean
 public class TweeterAuthTokens implements DynamoTweeterTable {
@@ -25,19 +26,9 @@ public class TweeterAuthTokens implements DynamoTweeterTable {
 
 //////// ATTRIBUTES ////////
     private String token; // primary partition key
-    private Number expiresTimestamp;
+    private Long expiresTimestamp;
     private String expiresTimestampString;
-    private Number expiresOffsetInSeconds;
-
-
-    
-//////// CONSTRUCTOR ////////
-    public TweeterAuthTokens(String token, Number expiresTimestamp, String expiresTimestampString, Number expiresOffsetInSeconds) {
-        this.token = token;
-        this.expiresTimestamp = expiresTimestamp;
-        this.expiresTimestampString = expiresTimestampString;
-        this.expiresOffsetInSeconds = expiresOffsetInSeconds;
-    }
+    private Integer expiresOffsetInSeconds;
 
     
 //////// GETTERS AND SETTERS ////////
@@ -50,11 +41,11 @@ public class TweeterAuthTokens implements DynamoTweeterTable {
         this.token = token;
     }
 
-    public Number getExpiresTimestamp() {
+    public Long getExpiresTimestamp() {
         return expiresTimestamp;
     }
 
-    public void setExpiresTimestamp(Number expiresTimestamp) {
+    public void setExpiresTimestamp(Long expiresTimestamp) {
         this.expiresTimestamp = expiresTimestamp;
     }
 
@@ -66,11 +57,11 @@ public class TweeterAuthTokens implements DynamoTweeterTable {
         this.expiresTimestampString = expiresTimestampString;
     }
 
-    public Number getExpiresOffsetInSeconds() {
+    public Integer getExpiresOffsetInSeconds() {
         return expiresOffsetInSeconds;
     }
 
-    public void setExpiresOffsetInSeconds(Number expiresOffsetInSeconds) {
+    public void setExpiresOffsetInSeconds(Integer expiresOffsetInSeconds) {
         this.expiresOffsetInSeconds = expiresOffsetInSeconds;
     }
 

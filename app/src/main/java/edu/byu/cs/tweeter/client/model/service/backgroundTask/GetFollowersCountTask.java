@@ -24,7 +24,6 @@ public class GetFollowersCountTask extends GetCountTask {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.targetUser = targetUser;
     }
 
@@ -32,10 +31,9 @@ public class GetFollowersCountTask extends GetCountTask {
 
 
     try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
 
-            GetFollowersCountRequest request = new GetFollowersCountRequest(authToken, currUserAlias, targetUserAlias);
+            GetFollowersCountRequest request = new GetFollowersCountRequest(authToken, targetUserAlias);
             GetFollowersCountResponse response = getServerFacade().getFollowersCount(request, FollowService.getFollowersCountUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {

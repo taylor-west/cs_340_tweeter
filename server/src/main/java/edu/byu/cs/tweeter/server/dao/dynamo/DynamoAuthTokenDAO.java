@@ -47,7 +47,12 @@ public class DynamoAuthTokenDAO extends DynamoDAO<TweeterAuthTokens> implements 
             TweeterAuthTokens existingEntry = table.getItem(key);
             if (existingEntry == null) {
                 long expiresTimestamp = newAuthToken.getTimestamp() + authTokenLifespanInSeconds;
-                TweeterAuthTokens newTweeterAuthToken = new TweeterAuthTokens(newAuthToken.getToken(), expiresTimestamp, Instant.ofEpochSecond(expiresTimestamp).toString(), authTokenLifespanInSeconds);
+                TweeterAuthTokens newTweeterAuthToken = new TweeterAuthTokens();
+                newTweeterAuthToken.setToken(newAuthToken.getToken());
+                newTweeterAuthToken.setExpiresTimestamp(expiresTimestamp);
+                newTweeterAuthToken.setExpiresTimestampString(Instant.ofEpochSecond(expiresTimestamp).toString());
+                newTweeterAuthToken.setExpiresOffsetInSeconds(authTokenLifespanInSeconds);
+
                 table.putItem(newTweeterAuthToken);
             }
         }catch (Exception e){
@@ -103,6 +108,7 @@ public class DynamoAuthTokenDAO extends DynamoDAO<TweeterAuthTokens> implements 
 
         TweeterAuthTokens dbAuthToken = null;
         try{
+            System.out.println("in DynamoAuthTokenDAO.verifyAuthTokenIsValid for authToken=(" + authToken.toString() + ")");
             DynamoDbTable<TweeterAuthTokens> table = getTweeterAuthTokensTable();
             Key key = Key.builder()
                     .partitionValue(authToken.getToken())
@@ -110,12 +116,21 @@ public class DynamoAuthTokenDAO extends DynamoDAO<TweeterAuthTokens> implements 
 
             // get TweeterAuthToken from database
             dbAuthToken = table.getItem(key);
+            System.out.println(" verifyAuthTokenIsValid: retrieved authToken from database: " + dbAuthToken.toString());
+            System.out.println(" verifyAuthTokenIsValid: dbAuthToken expires: " + dbAuthToken.getExpiresTimestampString() + " (currently: " + Instant.now().toString() + ")");
 
-            if( (dbAuthToken != null) && (!timestampIsExpired( dbAuthToken.getExpiresTimestamp() )) ){
-                isValid = true;
+            if(dbAuthToken == null){
+                throw new RuntimeException("[DAO Error] could not find AuthToken in database: " + authToken.toString());
+            }else if( timestampIsExpired(dbAuthToken.getExpiresTimestamp()) ){
+                throw new RuntimeException("[DAO Error] AuthToken is expired - expiresTimestampString: " + dbAuthToken.getExpiresTimestampString() + " (currently: " + Instant.now().toString() + ")");
             }
+//
+//            if( (dbAuthToken != null) && (!timestampIsExpired( dbAuthToken.getExpiresTimestamp() )) ){
+//                System.out.println(" verifyAuthTokenIsValid: checks passed, authToken is valid");
+//                isValid = true;
+//            }
 
-            return isValid;
+            return true;
         }catch (Exception e){
             throw new RuntimeException("[DAO Error] Error thrown while verifying validity of AuthToken (partitionValue=" + authToken.getToken() + "): " + e.getMessage());
         }
@@ -145,8 +160,8 @@ public class DynamoAuthTokenDAO extends DynamoDAO<TweeterAuthTokens> implements 
         return base64Encoder.encodeToString(randomBytes);
     }
 
-    private boolean timestampIsExpired(Number timestamp){
-        Instant timestampInstant = Instant.ofEpochSecond(timestamp.longValue());
+    private boolean timestampIsExpired(Long timestamp){
+        Instant timestampInstant = Instant.ofEpochSecond(timestamp);
         boolean isExpired = Instant.now().isAfter( timestampInstant );
         return isExpired;
     }
@@ -157,7 +172,7 @@ public class DynamoAuthTokenDAO extends DynamoDAO<TweeterAuthTokens> implements 
      */
     private DynamoDbTable<TweeterAuthTokens> getTweeterAuthTokensTable(){
         if(tweeterAuthTokensDynamoDbTable == null){
-            tweeterAuthTokensDynamoDbTable = enhancedClient.table(AUTHTOKEN_TABLE_NAME, TableSchema.fromBean(AUTHTOKEN_TABLE_CLASS));
+            tweeterAuthTokensDynamoDbTable = getEnhancedDynamoClient().table(AUTHTOKEN_TABLE_NAME, TableSchema.fromBean(AUTHTOKEN_TABLE_CLASS));
         }
 
         return tweeterAuthTokensDynamoDbTable;

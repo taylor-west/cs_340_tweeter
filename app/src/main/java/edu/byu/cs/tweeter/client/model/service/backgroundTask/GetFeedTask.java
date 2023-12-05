@@ -34,7 +34,6 @@ public class GetFeedTask extends PagedTask<Status> {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.targetUser = targetUser;
         this.limit = limit;
         this.lastItem = lastStatus;
@@ -42,7 +41,7 @@ public class GetFeedTask extends PagedTask<Status> {
 
     public void performTask() {
         try {
-            GetFeedRequest request = new GetFeedRequest(authToken, currUser.getAlias(), limit, lastItem, targetUser.getAlias());
+            GetFeedRequest request = new GetFeedRequest(authToken, limit, lastItem, targetUser.getAlias());
             GetFeedResponse response = getServerFacade().getFeed(request, StatusService.getGetFeedUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {

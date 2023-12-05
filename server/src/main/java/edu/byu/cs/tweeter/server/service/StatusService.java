@@ -20,7 +20,7 @@ public class StatusService extends Service {
     }
 
     public GetStoryResponse getStory(GetStoryRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getTargetUserAlias(), "target user");
 
         DataPage<Status> statusPage = daoFactory.getStatusDAO().getStory(request.getTargetUser(), request.getLimit(), request.getLastItem());
@@ -29,7 +29,7 @@ public class StatusService extends Service {
     }
 
     public GetFeedResponse getFeed(GetFeedRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
         checkLimit(request.getLimit());
 
         DataPage<Status> feedPage = daoFactory.getStatusDAO().getFeed(request.getTargetUserAlias(), request.getLimit(), request.getLastItem());
@@ -37,11 +37,11 @@ public class StatusService extends Service {
     }
 
     public PostStatusResponse postStatus(PostStatusRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
         checkStatus(request.getStatus());
 
         // pull a list of aliases for all Users who follow the posting (current) user
-        List<String> followersAliases = daoFactory.getFollowDAO().getFollowersAliases(request.getCurrUserAlias());
+        List<String> followersAliases = daoFactory.getFollowDAO().getFollowersAliases(request.getTargetUserAlias());
 
         // add the Status to the feed of each follower
         for(String followerAlias : followersAliases){

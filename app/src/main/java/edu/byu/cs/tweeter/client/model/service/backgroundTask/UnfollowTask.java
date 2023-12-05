@@ -29,18 +29,17 @@ public class UnfollowTask extends AuthenticatedTask {
      */
     private User followee;
 
-    public UnfollowTask(AuthToken authToken, User currUser, User follower, User followee, Handler messageHandler) {
+    public UnfollowTask(AuthToken authToken, User follower, User followee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.follower = follower;
         this.followee = followee;
     }
 
     public void performTask() {
         try {
-            UnfollowRequest request = new UnfollowRequest(authToken, currUser.getAlias(), follower.getAlias(), followee.getAlias());
+            UnfollowRequest request = new UnfollowRequest(authToken, follower.getAlias(), followee.getAlias());
             UnfollowResponse response = getServerFacade().unfollow(request, FollowService.getUnfollowUrlPath(follower.getAlias(), followee.getAlias()));
 
             if (response.isSuccess()) {

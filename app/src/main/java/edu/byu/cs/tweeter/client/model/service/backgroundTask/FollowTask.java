@@ -30,18 +30,17 @@ public class FollowTask extends AuthenticatedTask {
      */
     private User follower;
 
-    public FollowTask(AuthToken authToken, User currUser, User follower, User followee, Handler messageHandler) {
+    public FollowTask(AuthToken authToken, User follower, User followee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.follower = follower;
         this.followee = followee;
     }
 
     public void performTask() {
         try {
-            FollowRequest request = new FollowRequest(authToken, follower.getAlias(), follower, followee);
+            FollowRequest request = new FollowRequest(authToken, follower, followee);
             FollowResponse response = getServerFacade().follow(request, FollowService.getFollowUrlPath(follower.getAlias(), followee.getAlias()));
 
             if (response.isSuccess()) {

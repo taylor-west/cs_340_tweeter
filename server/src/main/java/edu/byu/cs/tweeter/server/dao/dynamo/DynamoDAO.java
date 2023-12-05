@@ -2,6 +2,7 @@ package edu.byu.cs.tweeter.server.dao.dynamo;
 
 import edu.byu.cs.tweeter.server.dao.dynamo.tables.DynamoTweeterTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
@@ -12,17 +13,35 @@ abstract public class DynamoDAO<T extends DynamoTweeterTable> {
 //    abstract Key buildKey(String partitionValue, Object sortKey);
 
     // DynamoDB client
-    protected static DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
-            .region(Region.US_EAST_1)
-            .build();
+    private static DynamoDbClient dynamoDbClient;
 
-    protected static DynamoDbEnhancedClient enhancedClient = DynamoDbEnhancedClient.builder()
-            .dynamoDbClient(dynamoDbClient)
-            .build();
+    private static DynamoDbEnhancedClient enhancedClient;
 
 
     protected static boolean isNonEmptyString(String value) {
         return (value != null && value.length() > 0);
+    }
+
+    protected DynamoDbClient getDynamoClient(){
+        if(dynamoDbClient == null){
+            System.out.println("making dynamoDbClient...");
+            dynamoDbClient = DynamoDbClient.builder()
+                    .region(Region.US_EAST_1)
+                    .build();
+            System.out.println("finished making dynamoDbClient...");
+        }
+        return dynamoDbClient;
+    }
+
+    protected DynamoDbEnhancedClient getEnhancedDynamoClient(){
+        if(enhancedClient == null){
+            System.out.println("making enhancedClient...");
+            enhancedClient = DynamoDbEnhancedClient.builder()
+                    .dynamoDbClient(getDynamoClient())
+                    .build();
+            System.out.println("finished making enhancedClient...");
+        }
+        return enhancedClient;
     }
 //
 //    /**

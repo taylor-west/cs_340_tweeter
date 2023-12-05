@@ -33,7 +33,7 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      *  The name of the primary index for the TweeterStories table.
      */
     private static final String StoriesTableIndexName = "userAlias";
-    private static final String StoriesTableSortName = "timestamp";
+//    private static final String StoriesTableSortName = "timestamp";
     private static final String StoriesUserAliasAttr = "userAlias";
     private static final String StoriesTimestampAttr = "timestamp";
 
@@ -48,11 +48,11 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      *  The name of the primary index for the TweeterFeeds table.
      */
     private static final String FeedsTableIndexName = "feedOwnerAlias";
-    private static final String FeedsTableSortName = "uniqueHash";
+//    private static final String FeedsTableSortName = "uniqueHash";
     private static final String FeedsOwnerAliasAttr = "feedOwnerAlias";
     private static final String FeedsUniqueHashAttr = "uniqueHash";
-    private static final String FeedsTimestampAttr = "postTimestamp";
-    private static final String FeedsPostUserAliasAttr = "postUserAlias";
+//    private static final String FeedsTimestampAttr = "postTimestamp";
+//    private static final String FeedsPostUserAliasAttr = "postUserAlias";
 
     private static DynamoDbTable<TweeterFeeds> tweeterFeedsDynamoDbTable;
     private static DynamoDbIndex<TweeterFeeds> tweeterFeedsDynamoDbIndex;
@@ -71,42 +71,19 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      */
     @Override
     public DataPage<Status> getStory(User targetUser, int limit, Status lastStatus) {
-        // TODO: Generates dummy data. Replace with a real implementation.
         assert limit > 0;
         assert targetUser.getAlias() != null;
 
-//        List<Status> allStatuses = getDummyStory();
-//        List<Status> responseStatuses = new ArrayList<>(limit);
-//        System.out.println("StatusDAO found " + allStatuses.size() + " total statuses in the Story of user: " + userAlias); // TODO: remove
-//
-//        boolean hasMorePages = false;
-//
-//        if(limit > 0) {
-//            if (allStatuses != null) {
-//                int followeesIndex = getStartingIndex(lastStatus, allStatuses);
-//
-//                for(int limitCounter = 0; followeesIndex < allStatuses.size() && limitCounter < limit; followeesIndex++, limitCounter++) {
-//                    responseStatuses.add(allStatuses.get(followeesIndex));
-//                }
-//
-//                hasMorePages = followeesIndex < allStatuses.size();
-//            }
-//        }
-//
-//        return new Pair<>(responseStatuses, hasMorePages);
-
-
-//        DynamoDbIndex<TweeterStories> index = enhancedClient.table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableIndexName);
-        DynamoDbIndex<TweeterStories> index = getStoriesIndex();
         Key key = Key.builder()
                 .partitionValue(targetUser.getAlias())
                 .build();
 
         QueryEnhancedRequest.Builder requestBuilder = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(key))
+                .scanIndexForward(false)
                 .limit(limit);
 
-        if(isNonEmptyString(lastStatus.user.getAlias()) && (lastStatus.timestamp != null) ) {
+        if( (lastStatus != null) && isNonEmptyString(lastStatus.user.getAlias()) && (lastStatus.timestamp != null) ) {
             Map<String, AttributeValue> startKey = new HashMap<>();
             startKey.put(StoriesUserAliasAttr, AttributeValue.builder().s(lastStatus.user.getAlias()).build());
             startKey.put(StoriesTimestampAttr, AttributeValue.builder().n(lastStatus.timestamp.toString()).build());
@@ -118,7 +95,8 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
 
         DataPage<Status> statusPage = new DataPage<Status>();
 
-        SdkIterable<Page<TweeterStories>> sdkIterable = index.query(request);
+        DynamoDbTable<TweeterStories> table = getStoriesTable();
+        SdkIterable<Page<TweeterStories>> sdkIterable = table.query(request);
         PageIterable<TweeterStories> pages = PageIterable.create(sdkIterable);
         pages.stream()
                 .limit(1)
@@ -144,7 +122,7 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      */
     @Override
     public DataPage<Status> getFeed(String userAlias, int limit, Status lastStatus) {
-        // TODO: Generates dummy data. Replace with a real implementation.
+        System.out.println("in DynamoStatusDAO.getFeed for: userAlias=" + userAlias + ", limit=" + limit + ", lastStatus=" + lastStatus);
         assert limit > 0;
         assert userAlias != null;
         assert lastStatus.getTimestamp() != null;
@@ -152,58 +130,58 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
         assert lastStatus.getUser().getAlias() != null;
         assert lastStatus.getPost() != null;
 
-//        List<Status> allStatuses = getDummyFeed();
-//        List<Status> responseStatuses = new ArrayList<>(limit);
-//        System.out.println("StatusDAO found " + allStatuses.size() + " total statuses in the Feed of user: " + userAlias); // TODO: remove
-//
-//        boolean hasMorePages = false;
-//
-//        if(limit > 0) {
-//            if (allStatuses != null) {
-//                int statusIndex = getStartingIndex(lastStatus, allStatuses);
-//
-//                for(int limitCounter = 0; statusIndex < allStatuses.size() && limitCounter < limit; statusIndex++, limitCounter++) {
-//                    responseStatuses.add(allStatuses.get(statusIndex));
-//                }
-//
-//                hasMorePages = statusIndex < allStatuses.size();
-//            }
-//        }
-//
-//        return new Pair<>(responseStatuses, hasMorePages);
-        DynamoDbIndex<TweeterFeeds> index = getFeedsIndex();
         Key key = Key.builder()
                 .partitionValue(userAlias)
                 .build();
+        System.out.println("  getFeed: finished building Key");
 
         QueryEnhancedRequest.Builder requestBuilder = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(key))
+                .scanIndexForward(false)
                 .limit(limit);
+        System.out.println("  getFeed: finished building requestBuilder");
 
-        if(isNonEmptyString(lastStatus.getUser().getAlias()) ) {
+        if( (lastStatus != null) && isNonEmptyString(lastStatus.getUser().getAlias()) ) {
             Map<String, AttributeValue> startKey = new HashMap<>();
             startKey.put(FeedsOwnerAliasAttr, AttributeValue.builder().s(userAlias).build());
 
             String lastStatusUniqueHash = TweeterFeeds.makeHash(lastStatus.getTimestamp(),
                     lastStatus.getUser().getAlias(), lastStatus.getPost());
             startKey.put(FeedsUniqueHashAttr, AttributeValue.builder().s(lastStatusUniqueHash).build());
+            System.out.println("  getFeed: finished making startKey");
 
             requestBuilder.exclusiveStartKey(startKey);
         }
 
         QueryEnhancedRequest request = requestBuilder.build();
+        System.out.println("  getFeed: finished building request");
 
         DataPage<Status> statusPage = new DataPage<Status>();
+        System.out.println("  getFeed: finished initializing DataPage<Status>");
 
-        SdkIterable<Page<TweeterFeeds>> sdkIterable = index.query(request);
+        System.out.println("  getFeed: attempting to get Feeds table");
+        DynamoDbTable<TweeterFeeds> table = getFeedsTable();
+        System.out.println("  getFeed: finished getting Feeds table");
+
+        SdkIterable<Page<TweeterFeeds>> sdkIterable = table.query(request);
         PageIterable<TweeterFeeds> pages = PageIterable.create(sdkIterable);
+
+        if(pages != null){
+            System.out.println("  getFeed: pages=" + pages.stream().toString());
+        }else{
+            System.out.println("  getFeed: pages=null");
+        }
         pages.stream()
                 .limit(1)
                 .forEach((Page<TweeterFeeds> page) -> {
+                    System.out.println("  getFeed: processing page...");
+
                     statusPage.setHasMorePages(page.lastEvaluatedKey() != null);
                     page.items().forEach(entry -> statusPage.getValues().add(entry.statusFromFeed()));
+                    System.out.println("    getFeed: finished processing page");
                 });
 
+        System.out.println("  getFeed: finished all");
         return statusPage;
     }
 
@@ -221,9 +199,14 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
 
         DynamoDbTable<TweeterStories> table = getStoriesTable();
 
-        TweeterStories newStory = new TweeterStories(status.getUser().getAlias(), status.getPost(),
-                status.getTimestamp(), Instant.ofEpochSecond(status.timestamp).toString(),
-                status.getUrls(), status.getMentions());
+        TweeterStories newStory = new TweeterStories();
+        newStory.setMentionedAliases(status.getMentions());
+        newStory.setUrls(status.getUrls());
+        newStory.setTimestamp(status.getTimestamp());
+        newStory.setTimestampString(Instant.ofEpochSecond(status.getTimestamp()).toString());
+        newStory.setPostText(status.getPost());
+        newStory.setUserAlias(status.getUser().getAlias());
+
         table.putItem(newStory);
     }
 
@@ -250,7 +233,7 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      */
     private DynamoDbIndex<TweeterStories> getStoriesIndex(){
         if(tweeterStoriesDynamoDbIndex == null){
-            tweeterStoriesDynamoDbIndex = enhancedClient.table(StoriesTableName, TableSchema.fromBean(StoriesTableClass)).index(StoriesTableIndexName);
+            tweeterStoriesDynamoDbIndex = getEnhancedDynamoClient().table(StoriesTableName, TableSchema.fromBean(StoriesTableClass)).index(StoriesTableIndexName);
         }
 
         return tweeterStoriesDynamoDbIndex;
@@ -262,7 +245,7 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      */
     private DynamoDbTable<TweeterStories> getStoriesTable(){
         if(tweeterStoriesDynamoDbTable == null){
-            tweeterStoriesDynamoDbTable = enhancedClient.table(StoriesTableName, TableSchema.fromBean(StoriesTableClass));
+            tweeterStoriesDynamoDbTable = getEnhancedDynamoClient().table(StoriesTableName, TableSchema.fromBean(StoriesTableClass));
         }
 
         return tweeterStoriesDynamoDbTable;
@@ -273,8 +256,9 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      * @return an instance of the TweeterFeeds DynamoDbIndex.
      */
     private DynamoDbIndex<TweeterFeeds> getFeedsIndex(){
+        System.out.println("in DynamoStatusDAO.getFeedsIndex");
         if(tweeterStoriesDynamoDbIndex == null){
-            tweeterFeedsDynamoDbIndex = enhancedClient.table(FeedsTableName, TableSchema.fromBean(FeedsTableClass)).index(FeedsTableIndexName);
+            tweeterFeedsDynamoDbIndex = getEnhancedDynamoClient().table(FeedsTableName, TableSchema.fromBean(FeedsTableClass)).index(FeedsTableIndexName);
         }
 
         return tweeterFeedsDynamoDbIndex;
@@ -286,7 +270,7 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
      */
     private DynamoDbTable<TweeterFeeds> getFeedsTable(){
         if(tweeterFeedsDynamoDbTable == null){
-            tweeterFeedsDynamoDbTable = enhancedClient.table(FeedsTableName, TableSchema.fromBean(FeedsTableClass));
+            tweeterFeedsDynamoDbTable = getEnhancedDynamoClient().table(FeedsTableName, TableSchema.fromBean(FeedsTableClass));
         }
 
         return tweeterFeedsDynamoDbTable;

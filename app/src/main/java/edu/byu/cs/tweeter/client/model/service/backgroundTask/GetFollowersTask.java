@@ -42,7 +42,6 @@ public class GetFollowersTask extends PagedTask<User> {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.targetUser = targetUser;
         this.limit = limit;
         this.lastItem = lastUser;
@@ -51,20 +50,16 @@ public class GetFollowersTask extends PagedTask<User> {
     public void performTask() {
 
         try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
             String lastFollowerAlias = lastItem == null ? null : lastItem.getAlias();
 
-            FollowersRequest request = new FollowersRequest(authToken, currUserAlias, limit, lastFollowerAlias, targetUserAlias);
+            FollowersRequest request = new FollowersRequest(authToken, limit, lastFollowerAlias, targetUserAlias);
             FollowersResponse response = getServerFacade().getFollowers(request, FollowService.getFollowersUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {
                 this.followers = response.getFollowers();
                 this.hasMorePages = response.getHasMorePages();
-                    Pair<List<User>, Boolean> pageOfItems =  getFakeData().getPageOfUsers((User) lastItem, limit, targetUser);
-                    this.followers = pageOfItems.getFirst();
-                    this.hasMorePages = pageOfItems.getSecond();
-                    sendSuccessMessage();
+                sendSuccessMessage();
             } else {
                 sendFailedMessage(response.getMessage());
             }

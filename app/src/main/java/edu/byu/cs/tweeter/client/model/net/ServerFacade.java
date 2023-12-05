@@ -68,7 +68,7 @@ public class ServerFacade {
      */
     public UnfollowResponse unfollow(UnfollowRequest request, String urlPath)
             throws IOException, TweeterRemoteException {
-        System.out.println("ServerFacade#unfollow with URL=" + urlPath);
+        System.out.println("ServerFacade#unfollow with URL=" + urlPath + ", and request: " + request.toString());
         UnfollowResponse response = clientCommunicator.doPost(urlPath, request, null, UnfollowResponse.class);
         return response;
     }
@@ -84,6 +84,7 @@ public class ServerFacade {
      */
     public IsFollowerResponse isFollower(IsFollowerRequest request, String urlPath)
             throws IOException, TweeterRemoteException {
+        System.out.println("ServerFacade#IsFollowerResponse with URL=" + urlPath + ", request=" + request.toString());
         return clientCommunicator.doPost(urlPath, request, null, IsFollowerResponse.class);
     }
 
@@ -222,6 +223,9 @@ public class ServerFacade {
      */
     public GetFeedResponse getFeed(GetFeedRequest getFeedRequest, String urlPath)
             throws IOException, TweeterRemoteException {
-        return clientCommunicator.doPost(urlPath, getFeedRequest, null, GetFeedResponse.class);
+        System.out.println("FEED URL: " + urlPath);
+        GetFeedResponse response = clientCommunicator.doPost(urlPath, getFeedRequest, null, GetFeedResponse.class);
+        System.out.println("statuses: " + response.getStatuses());
+        return response;
     }
 }

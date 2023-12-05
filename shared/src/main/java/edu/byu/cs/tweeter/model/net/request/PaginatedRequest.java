@@ -19,14 +19,13 @@ public class PaginatedRequest<T> extends AuthenticatedRequest {
     /**
      *
      * @param authToken the AuthToken of the current user (whose is logged in and making the request)
-     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
      * @param limit the maximum number of items to return at a time (pageSize)
      * @param lastItem the last item that was returned in the previous request (null if
      *                 there was no previous request or if no items were returned in the
      *                 previous request).
      */
-    protected PaginatedRequest(AuthToken authToken, String currUserAlias, int limit, T lastItem) {
-        super(authToken, currUserAlias);
+    protected PaginatedRequest(AuthToken authToken, int limit, T lastItem) {
+        super(authToken);
 
         this.limit = limit;
         this.lastItem = lastItem;

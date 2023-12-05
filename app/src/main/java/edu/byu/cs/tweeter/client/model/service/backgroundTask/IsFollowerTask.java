@@ -32,29 +32,25 @@ public class IsFollowerTask extends AuthenticatedTask {
 
     private boolean isFollower;
 
-    public IsFollowerTask(AuthToken authToken, User currUser, User follower, User followee, Handler messageHandler) {
+    public IsFollowerTask(AuthToken authToken, User follower, User followee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.follower = follower;
         this.followee = followee;
     }
 
     public void performTask() {
-        this.isFollower = new Random().nextInt() > 0;
-        sendSuccessMessage();
-
         try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String followerAlias = follower == null ? null : follower.getAlias();
             String followeeAlias = followee == null ? null : followee.getAlias();
 
-            IsFollowerRequest request = new IsFollowerRequest(authToken, currUserAlias, followerAlias, followeeAlias);
+            IsFollowerRequest request = new IsFollowerRequest(authToken, followerAlias, followeeAlias);
             IsFollowerResponse response = getServerFacade().isFollower(request, FollowService.getIsFollowerUrlPath(follower.getAlias(), followee.getAlias()));
 
             if (response.isSuccess()) {
-                this.isFollower = response.isFollower();
+                System.out.println("IN IsFollowerTask.performTask: response is a success: response=" + response.toString());
+                this.isFollower = response.getIsFollower();
                 sendSuccessMessage();
             } else {
                 sendFailedMessage(response.getMessage());
@@ -68,6 +64,7 @@ public class IsFollowerTask extends AuthenticatedTask {
     protected Bundle constructSuccessBundle() {
         Bundle msgBundle = new Bundle();
         msgBundle.putBoolean(SUCCESS_KEY, true);
+        System.out.println("IN IsFollowerTask.constructSuccessBundle: ");
         msgBundle.putBoolean(IS_FOLLOWER_KEY, this.isFollower);
 
         return msgBundle;

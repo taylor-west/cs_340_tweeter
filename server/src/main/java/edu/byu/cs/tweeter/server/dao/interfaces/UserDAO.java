@@ -27,15 +27,15 @@ public interface UserDAO {
      * uses generated data and doesn't actually access a database.
      * Returns the newly created User and an AuthToken
      *
-     * @param username the desired alias/username of the User whose is attempting to register
-     * @param password the password of the User whose is attempting to register
-     * @param firstName the first name of the User whose is attempting to register
-     * @param lastName the last name of the User whose is attempting to register
-     * @param image the desired profile image of the User whose is attempting to register, encoded
-     *              as a string
+     * @param username the desired alias/username of the User who is attempting to register
+     * @param password the password of the User who is attempting to register
+     * @param firstName the first name of the User who is attempting to register
+     * @param lastName the last name of the User who is attempting to register
+     * @param imageByteString a string representing the Base64 encoded profile image for the User
+     *                        who is attempting to register
      * @return a new user with the specified details
      */
-    User register(String username, String password, String firstName, String lastName, String image);
+    User register(String username, String password, String firstName, String lastName, String imageByteString);
 
 
     /**

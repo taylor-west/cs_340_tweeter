@@ -38,4 +38,12 @@ public class AuthToken implements Serializable {
     public long getTimestamp() {
         return timestamp;
     }
+
+    @Override
+    public String toString() {
+        return "AuthToken{" +
+                "token='" + token + '\'' +
+                ", timestamp=" + timestamp +
+                '}';
+    }
 }

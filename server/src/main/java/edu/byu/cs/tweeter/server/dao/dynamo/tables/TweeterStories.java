@@ -48,7 +48,7 @@ public class TweeterStories implements DynamoTweeterTable {
     /**
      * Number representation of the date/time at which the status was sent (use to compare).
      */
-    public Number timestamp; // primary sort key
+    public Long timestamp; // primary sort key
 
     /**
      * String representation of the date/time at which the status was sent.
@@ -64,18 +64,6 @@ public class TweeterStories implements DynamoTweeterTable {
      * User mentions contained in the post text.
      */
     public List<String> mentionedAliases;
-
-
-//////// CONSTRUCTOR ////////
-
-    public TweeterStories(String userAlias, String postText, Number timestamp, String timestampString, List<String> urls, List<String> mentionedAliases) {
-        this.userAlias = userAlias;
-        this.postText = postText;
-        this.timestamp = timestamp;
-        this.timestampString = timestampString;
-        this.urls = urls;
-        this.mentionedAliases = mentionedAliases;
-    }
 
 
 //////// GETTERS AND SETTERS ////////
@@ -98,11 +86,11 @@ public class TweeterStories implements DynamoTweeterTable {
     }
 
     @DynamoDbSortKey
-    public Number getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Number timestamp) {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 

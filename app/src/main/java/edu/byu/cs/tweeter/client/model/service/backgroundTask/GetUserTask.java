@@ -31,15 +31,12 @@ public class GetUserTask extends AuthenticatedTask {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.targetUserAlias = targetUserAlias;
     }
 
     public void performTask() {
         try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
-
-            GetUserRequest request = new GetUserRequest(authToken, currUserAlias, targetUserAlias);
+            GetUserRequest request = new GetUserRequest(authToken, targetUserAlias);
             GetUserResponse response = getServerFacade().getUser(request, UserService.getGetUserUrlPath(targetUserAlias));
 
             if (response.isSuccess()) {

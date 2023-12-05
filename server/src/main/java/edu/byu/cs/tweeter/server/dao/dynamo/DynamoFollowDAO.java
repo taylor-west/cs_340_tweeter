@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 /**
  * A DAO for accessing 'following' data from the database.
  */
-public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
+public class DynamoFollowDAO extends DynamoDAO<TweeterFollows> implements FollowDAO {
     private static final String FollowsTableName = "TweeterFollows";
     private static final Class<TweeterFollows> FollowsTableClass = TweeterFollows.class;
 
@@ -32,7 +32,7 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
      *  The name of the primary index for the TweeterFollows table.
      */
     private static final String FollowsTableIndexName = "followerAlias";
-    private static final String FollowsTableSecondaryIndexName = "followeeAlias";
+    private static final String FollowsTableSecondaryIndexName = "followeeAlias-followerAlias-index";
     private static final String FollowerHandleAttr = "followerAlias";
     private static final String FolloweeHandleAttr = "followeeAlias";
 
@@ -58,7 +58,16 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
         try{
             DynamoDbTable<TweeterFollows> table = getTweeterFollowsTable();
 
-            TweeterFollows newFollow = new TweeterFollows(follower.getAlias(), follower.getFirstName(), follower.getLastName(), follower.getImageUrl(),followee.getAlias(), followee.getFirstName(), followee.getLastName(), followee.getImageUrl());
+            TweeterFollows newFollow = new TweeterFollows();
+            newFollow.setFollowerAlias(follower.getAlias());
+            newFollow.setFollowerFirstName(follower.getFirstName());
+            newFollow.setFollowerLastName(follower.getLastName());
+            newFollow.setFollowerImageURL(follower.getImageUrl());
+            newFollow.setFolloweeAlias(followee.getAlias());
+            newFollow.setFolloweeFirstName(followee.getFirstName());
+            newFollow.setFolloweeLastName(followee.getLastName());
+            newFollow.setFolloweeImageURL(followee.getImageUrl());
+
             table.putItem(newFollow);
         }catch (Exception e){
             throw new RuntimeException("[DAO Error] Error thrown while inserting Follow into database (partitionValue=" + follower.getAlias() + ", sortValue=" + followee.getAlias() + "): " + e.getMessage());
@@ -74,7 +83,6 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
      */
     @Override
     public void unfollow(String followerAlias, String followeeAlias) {
-        //delete(AUTHTOKEN_TABLE_NAME, AUTHTOKEN_TABLE_CLASS, authToken.partitionValue(), null);
         assert followerAlias != null;
         assert followeeAlias != null;
 
@@ -85,8 +93,24 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
                     .partitionValue(followerAlias).sortValue(followeeAlias)
                     .build();
 
+            System.out.println("attempting to delete follow record with partitionValue: " + followerAlias + ", sortValue: " + followeeAlias);
+            TweeterFollows follow = table.getItem(key);
+            if(follow != null){
+                System.out.println("follow found: " + follow.toString());
+                TweeterFollows deletedFollows = table.deleteItem(key);
+
+                if(deletedFollows == null){
+                   System.out.println("no record was deleted");
+                   throw new Exception("no record was deleted");
+                }else{
+                    System.out.println("record deleted successfully: " + deletedFollows.toString());
+                }
+            }else{
+                System.out.println("follow record not found");
+                throw new Exception("record not found");
+            }
             // deletes TweeterAuthToken from the database
-            TweeterFollows deletedFollows = table.deleteItem(key);
+
         }catch (Exception e){
             throw new RuntimeException("[DAO Error] Error thrown while deleting Follow from database (partitionValue=" + followerAlias + ", sortValue=" + followeeAlias + "): " + e.getMessage());
         }
@@ -175,27 +199,6 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
         assert limit > 0;
         assert followerAlias != null;
 
-//        List<User> allFollowees = getDummyFollowees();
-//        List<User> responseFollowees = new ArrayList<>(limit);
-//        System.out.println("FollowDAO found " + allFollowees.size() + " total followees for user: " + followerAlias); // TODO: remove
-//
-//        boolean hasMorePages = false;
-//
-//        if(limit > 0) {
-//            if (allFollowees != null) {
-//                int followeesIndex = getFollowingStartingIndex(lastFolloweeAlias, allFollowees);
-//
-//                for(int limitCounter = 0; followeesIndex < allFollowees.size() && limitCounter < limit; followeesIndex++, limitCounter++) {
-//                    responseFollowees.add(allFollowees.get(followeesIndex));
-//                }
-//
-//                hasMorePages = followeesIndex < allFollowees.size();
-//            }
-//        }
-//
-//        return new Pair<>(responseFollowees, hasMorePages);
-
-        DynamoDbIndex<TweeterFollows> index = enhancedClient.table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableIndexName);
         Key key = Key.builder()
                 .partitionValue(followerAlias)
                 .build();
@@ -204,7 +207,7 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
                 .queryConditional(QueryConditional.keyEqualTo(key))
                 .limit(limit);
 
-        if(isNonEmptyString(lastFolloweeAlias)) {
+        if( (lastFolloweeAlias != null) && isNonEmptyString(lastFolloweeAlias)) {
             Map<String, AttributeValue> startKey = new HashMap<>();
             startKey.put(FollowerHandleAttr, AttributeValue.builder().s(followerAlias).build());
             startKey.put(FolloweeHandleAttr, AttributeValue.builder().s(lastFolloweeAlias).build());
@@ -216,7 +219,8 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
 
         DataPage<User> result = new DataPage<User>();
 
-        SdkIterable<Page<TweeterFollows>> sdkIterable = index.query(request);
+        DynamoDbTable<TweeterFollows> table = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass));
+        SdkIterable<Page<TweeterFollows>> sdkIterable = table.query(request);
         PageIterable<TweeterFollows> pages = PageIterable.create(sdkIterable);
         pages.stream()
                 .limit(1)
@@ -242,31 +246,9 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
      */
     @Override
     public DataPage<User> getFollowers(String followeeAlias, int limit, String lastFollowerAlias) {
-        // TODO: Generates dummy data. Replace with a real implementation.
         assert limit > 0;
         assert followeeAlias != null;
 
-//        List<User> allFollowers = getDummyFollowers();
-//        List<User> responseFollowers = new ArrayList<>(limit);
-//        System.out.println("FollowDAO found " + allFollowers.size() + " total followers for user: " + followeeAlias); // TODO: remove
-//
-//        boolean hasMorePages = false;
-//
-//        if(limit > 0) {
-//            if (allFollowers != null) {
-//                int followeesIndex = getFollowersStartingIndex(lastFollowerAlias, allFollowers);
-//
-//                for(int limitCounter = 0; followeesIndex < allFollowers.size() && limitCounter < limit; followeesIndex++, limitCounter++) {
-//                    responseFollowers.add(allFollowers.get(followeesIndex));
-//                }
-//
-//                hasMorePages = followeesIndex < allFollowers.size();
-//            }
-//        }
-//
-//        return new Pair<>(responseFollowers, hasMorePages);
-
-        DynamoDbIndex<TweeterFollows> index = enhancedClient.table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);
         Key key = Key.builder()
                 .partitionValue(followeeAlias)
                 .build();
@@ -275,7 +257,9 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
                 .queryConditional(QueryConditional.keyEqualTo(key))
                 .limit(limit);
 
-        if(isNonEmptyString(lastFollowerAlias)) {
+        System.out.println("in getFollowers for partitionValue: " + followeeAlias);
+
+        if( (lastFollowerAlias != null) && isNonEmptyString(lastFollowerAlias)) {
             Map<String, AttributeValue> startKey = new HashMap<>();
             startKey.put(FolloweeHandleAttr, AttributeValue.builder().s(followeeAlias).build());
             startKey.put(FollowerHandleAttr, AttributeValue.builder().s(lastFollowerAlias).build());
@@ -287,6 +271,7 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
 
         DataPage<User> result = new DataPage<User>();
 
+        DynamoDbIndex<TweeterFollows> index = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);;
         SdkIterable<Page<TweeterFollows>> sdkIterable = index.query(request);
         PageIterable<TweeterFollows> pages = PageIterable.create(sdkIterable);
         pages.stream()
@@ -296,6 +281,7 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
                     page.items().forEach(entry -> result.getValues().add(entry.userFromFollower()));
                 });
 
+        System.out.println("returning getFollowers: " + result.toString());
         return result;
     }
 
@@ -304,7 +290,7 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
         // List<String> followersAliases = find(FOLLOWS_TABLE_NAME, FOLLOWS_TABLE_CLASS, followeeAlias, null);
         assert followeeAlias != null;
 
-        DynamoDbIndex<TweeterFollows> index = enhancedClient.table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);
+        DynamoDbIndex<TweeterFollows> index = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);
         Key key = Key.builder()
                 .partitionValue(followeeAlias)
                 .build();
@@ -325,114 +311,13 @@ public class DynamoFollowDAO extends DynamoDAO implements FollowDAO {
         return followerAliases;
     }
 
-//    /**
-//     * Determines the index for the first followee in the specified 'allFollowees' list that should
-//     * be returned in the current request. This will be the index of the next followee after the
-//     * specified 'lastFollowee'.
-//     *
-//     * @param lastFolloweeAlias the alias of the last followee that was returned in the previous
-//     *                          request or null if there was no previous request.
-//     * @param allFollowees the generated list of followees from which we are returning paged results.
-//     * @return the index of the first followee to be returned.
-//     */
-//    private int getFollowingStartingIndex(String lastFolloweeAlias, List<User> allFollowees) {
-//
-//        int followeesIndex = 0;
-//
-//        if(lastFolloweeAlias != null) {
-//            // This is a paged request for something after the first page. Find the first item
-//            // we should return
-//            for (int i = 0; i < allFollowees.size(); i++) {
-//                if(lastFolloweeAlias.equals(allFollowees.get(i).getAlias())) {
-//                    // We found the index of the last item returned last time. Increment to get
-//                    // to the first one we should return
-//                    followeesIndex = i + 1;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        return followeesIndex;
-//    }
-//
-//    /**
-//     * Determines the index for the first follower in the specified 'allFollowers' list that should
-//     * be returned in the current request. This will be the index of the next follower after the
-//     * specified 'lastFollower'.
-//     *
-//     * @param lastFollowerAlias the alias of the last follower that was returned in the previous
-//     *                          request or null if there was no previous request.
-//     * @param allFollowers the generated list of followers from which we are returning paged results.
-//     * @return the index of the first follower to be returned.
-//     */
-//    private int getFollowersStartingIndex(String lastFollowerAlias, List<User> allFollowers) {
-//
-//        int followersIndex = 0;
-//
-//        if(lastFollowerAlias != null) {
-//            // This is a paged request for something after the first page. Find the first item
-//            // we should return
-//            for (int i = 0; i < allFollowers.size(); i++) {
-//                if(lastFollowerAlias.equals(allFollowers.get(i).getAlias())) {
-//                    // We found the index of the last item returned last time. Increment to get
-//                    // to the first one we should return
-//                    followersIndex = i + 1;
-//                    break;
-//                }
-//            }
-//        }
-//
-//        return followersIndex;
-//    }
-
-//    /**
-//     * Returns a boolean of whether or not the follower is following the followee. This is written
-//     * as a separate method to allow mocking.
-//     *
-//     * @return isFollower.
-//     */
-//    Boolean getDummyIsFollower(String followerAlias, String followeeAlias) {
-//        boolean isFollower = new Random().nextInt() > 0;
-//        return isFollower;
-//    }
-//
-//    /**
-//     * Returns the list of dummy followee data. This is written as a separate method to allow
-//     * mocking of the followees.
-//     *
-//     * @return the followees.
-//     */
-//    List<User> getDummyFollowees() {
-//        return getFakeData().getFakeUsers();
-//    }
-//
-//    /**
-//     * Returns the list of dummy follower data. This is written as a separate method to allow
-//     * mocking of the followers.
-//     *
-//     * @return the followers.
-//     */
-//    List<User> getDummyFollowers() {
-//        return getFakeData().getFakeUsers();
-//    }
-//
-//    /**
-//     * Returns the {@link FakeData} object used to generate dummy followees.
-//     * This is written as a separate method to allow mocking of the {@link FakeData}.
-//     *
-//     * @return a {@link FakeData} instance.
-//     */
-//    FakeData getFakeData() {
-//        return FakeData.getInstance();
-//    }
-
     /**
      * Gets a singleton instance of the TweeterFollows DynamoDbTable table.
      * @return an instance of the TweeterFollows DynamoDbTable table.
      */
     private DynamoDbTable<TweeterFollows> getTweeterFollowsTable(){
         if(tweeterFollowsDynamoDbTable == null){
-            tweeterFollowsDynamoDbTable = enhancedClient.table(FollowsTableName, TableSchema.fromBean(FollowsTableClass));
+            tweeterFollowsDynamoDbTable = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass));
         }
 
         return tweeterFollowsDynamoDbTable;

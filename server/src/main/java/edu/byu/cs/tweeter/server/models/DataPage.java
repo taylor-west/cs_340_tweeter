@@ -9,7 +9,7 @@ import java.util.List;
  * @param <T> type of data objects being returned.
  */
 public class DataPage<T> {
-    private List<T> values; // page of values returned by the database
+    private List<T> values = new ArrayList<>(); // page of values returned by the database
     private boolean hasMorePages; // Indicates whether there are more pages of data available to be retrieved
 
     public DataPage() {
@@ -29,5 +29,20 @@ public class DataPage<T> {
     }
     public boolean getHasMorePages() {
         return hasMorePages;
+    }
+
+    @Override
+    public String toString() {
+        String values_string = "[";
+        for(T item : values){
+            values_string += item.toString();
+            values_string += ", ";
+        }
+        values_string += "]";
+
+        return "DataPage{" +
+                "hasMorePages=" + hasMorePages +
+                ", values=" + values_string +
+                '}';
     }
 }

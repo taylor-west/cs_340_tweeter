@@ -4,7 +4,6 @@ import edu.byu.cs.tweeter.model.domain.AuthToken;
 
 public abstract class AuthenticatedRequest {
     private AuthToken authToken;
-    private String currUserAlias;
 
     /**
      * Allows construction of the object from Json. Private so it won't be called in normal code.
@@ -15,11 +14,9 @@ public abstract class AuthenticatedRequest {
      * Creates an Instance (only used for inheritance).
      *
      * @param authToken the AuthToken of the current user (whose is logged in and making the request)
-     * @param currUserAlias the alias of the current user (whose is logged in and making the request)
      */
-    public AuthenticatedRequest(AuthToken authToken, String currUserAlias) {
+    public AuthenticatedRequest(AuthToken authToken) {
         this.authToken = authToken;
-        this.currUserAlias = currUserAlias;
     }
 
     /**
@@ -38,23 +35,5 @@ public abstract class AuthenticatedRequest {
      */
     public void setAuthToken(AuthToken authToken) {
         this.authToken = authToken;
-    }
-
-    /**
-     * Gets the alias of the user that is currently logged in (making the request)
-     *
-     * @return the alias of the current User.
-     */
-    public String getCurrUserAlias() {
-        return currUserAlias;
-    }
-
-    /**
-     * Sets the alias of the user that is currently logged in (making the request)
-     *
-     * @param currUserAlias the alias of the current User.
-     */
-    public void setCurrUserAlias(String currUserAlias) {
-        this.currUserAlias = currUserAlias;
     }
 }

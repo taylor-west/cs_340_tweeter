@@ -14,8 +14,8 @@ public class LogoutRequest extends AuthenticatedRequest {
      *
      * @param authToken the authToken of the user to be logged out
      */
-    public LogoutRequest(AuthToken authToken, String currUserAlias) {
-        super(authToken, currUserAlias);
+    public LogoutRequest(AuthToken authToken) {
+        super(authToken);
     }
 
 

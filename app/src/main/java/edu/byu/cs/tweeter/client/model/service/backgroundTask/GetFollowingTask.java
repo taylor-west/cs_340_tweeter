@@ -31,12 +31,11 @@ public class GetFollowingTask extends PagedTask<User> {
     private Boolean hasMorePages;
 
 
-    public GetFollowingTask(AuthToken authToken, User currUser, User targetUser,
+    public GetFollowingTask(AuthToken authToken, User targetUser,
                             int limit, User lastFollowee, Handler messageHandler) {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.targetUser = targetUser;
         this.limit = limit;
         this.lastItem = lastFollowee;
@@ -45,11 +44,10 @@ public class GetFollowingTask extends PagedTask<User> {
     @Override
     public void performTask() {
         try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
             String lastFolloweeAlias = lastItem == null ? null : lastItem.getAlias();
 
-            FollowingRequest request = new FollowingRequest(authToken, currUserAlias, limit, lastFolloweeAlias, targetUserAlias);
+            FollowingRequest request = new FollowingRequest(authToken, limit, lastFolloweeAlias, targetUserAlias);
             FollowingResponse response = getServerFacade().getFollowing(request, FollowService.getFollowingUrlPath(targetUserAlias));
 
             if (response.isSuccess()) {

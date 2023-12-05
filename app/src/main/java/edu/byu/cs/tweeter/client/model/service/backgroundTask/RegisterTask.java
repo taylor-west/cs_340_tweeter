@@ -12,7 +12,6 @@ import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.TweeterRemoteException;
 import edu.byu.cs.tweeter.model.net.request.RegisterRequest;
 import edu.byu.cs.tweeter.model.net.response.RegisterResponse;
-import edu.byu.cs.tweeter.util.Pair;
 
 /**
  * Background task that creates a new user account and logs in the new user (i.e., starts a session).
@@ -31,26 +30,26 @@ public class RegisterTask extends AuthenticateTask {
     /**
      * The base-64 encoded bytes of the user's profile image.
      */
-    private String image;
+    private String imageByteString;
 
     private User registeredUser;
 
     private AuthToken registeredAuthToken;
 
     public RegisterTask(String firstName, String lastName, String username, String password,
-                        String image, Handler messageHandler) {
+                        String imageByteString, Handler messageHandler) {
         super(messageHandler);
 
         this.firstName = firstName;
         this.lastName = lastName;
         this.alias = username;
         this.password = password;
-        this.image = image;
+        this.imageByteString = imageByteString;
     }
 
     public void performTask() {
         try {
-            RegisterRequest request = new RegisterRequest(alias, password, firstName, lastName, image);
+            RegisterRequest request = new RegisterRequest(alias, password, firstName, lastName, imageByteString);
             RegisterResponse response = getServerFacade().register(request, UserService.getRegisterUrlPath());
 
             if (response.isSuccess()) {
@@ -66,11 +65,11 @@ public class RegisterTask extends AuthenticateTask {
         }
     }
 
-    private Pair<User, AuthToken> doRegister() {
-        User registeredUser = getFakeData().getFirstUser();
-        AuthToken authToken = getFakeData().getAuthToken();
-        return new Pair<>(registeredUser, authToken);
-    }
+//    private Pair<User, AuthToken> doRegister() {
+//        User registeredUser = getFakeData().getFirstUser();
+//        AuthToken authToken = getFakeData().getAuthToken();
+//        return new Pair<>(registeredUser, authToken);
+//    }
 
     protected Bundle constructSuccessBundle() {
         Bundle msgBundle = new Bundle();

@@ -39,7 +39,7 @@ public class FollowService extends Service {
      * @return whether the first user (follower) is currently following the second user (followee)
      */
     public IsFollowerResponse isFollower(IsFollowerRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getFollowerAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFollowerAlias(), "follower");
         checkUser(request.getFollowerAlias(), "follower");
         checkAlias(request.getFolloweeAlias(), "followee");
@@ -60,7 +60,7 @@ public class FollowService extends Service {
      * @return whether the follow was successful.
      */
     public FollowResponse follow(FollowRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getFollowerAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFollowerAlias(), "follower");
         checkUser(request.getFollowerAlias(), "follower");
         checkAlias(request.getFolloweeAlias(), "followee");
@@ -86,7 +86,7 @@ public class FollowService extends Service {
      * @return whether the unfollow was successful.
      */
     public UnfollowResponse unfollow(UnfollowRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getFollowerAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFollowerAlias(), "follower");
         checkUser(request.getFollowerAlias(), "follower");
         checkAlias(request.getFolloweeAlias(), "followee");
@@ -113,7 +113,7 @@ public class FollowService extends Service {
      * @return the followees.
      */
     public FollowingResponse getFollowing(FollowingRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFollowerAlias(), "follower");
         checkUser(request.getFollowerAlias(), "follower");
         checkLimit(request.getLimit());
@@ -132,7 +132,7 @@ public class FollowService extends Service {
      * @return the number of followees.
      */
     public GetFollowingCountResponse getFollowingCount(GetFollowingCountRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getFollowerAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFollowerAlias(), "follower");
         checkUser(request.getFollowerAlias(), "follower");
 
@@ -152,7 +152,7 @@ public class FollowService extends Service {
      * @return the followers.
      */
     public FollowersResponse getFollowers(FollowersRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getCurrUserAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFolloweeAlias(), "followee");
         checkUser(request.getFolloweeAlias(), "followee");
         checkLimit(request.getLimit());
@@ -171,7 +171,7 @@ public class FollowService extends Service {
      * @return the number of followers.
      */
     public GetFollowersCountResponse getFollowersCount(GetFollowersCountRequest request) {
-        checkAuthToken(request.getAuthToken(), request.getFolloweeAlias());
+        checkAuthToken(request.getAuthToken());
         checkAlias(request.getFolloweeAlias(), "followee");
         checkUser(request.getFolloweeAlias(), "followee");
 

@@ -1,7 +1,7 @@
 package edu.byu.cs.tweeter.model.net.request;
 
 public abstract class UnauthenticatedRequest {
-    protected final static int DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS = (15 * 60); // 15 minutes
+    protected final static int DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS = (30 * 60); // 30 minutes
     private String username;
     private String password;
 

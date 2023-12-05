@@ -52,7 +52,7 @@ public class GetStoryTask extends PagedTask<Status> {
         try {
             String currUserAlias = currUser == null ? null : currUser.getAlias();
 
-            GetStoryRequest request = new GetStoryRequest(authToken, currUserAlias, targetUser, limit, lastItem);
+            GetStoryRequest request = new GetStoryRequest(authToken, targetUser, limit, lastItem);
             GetStoryResponse response = getServerFacade().getStory(request, StatusService.getStoryUrl(targetUser.getAlias()));
 
             if (response.isSuccess()) {

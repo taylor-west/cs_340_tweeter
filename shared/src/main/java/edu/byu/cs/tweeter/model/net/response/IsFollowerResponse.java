@@ -28,12 +28,12 @@ public class IsFollowerResponse extends Response {
         this.isFollower = isFollower;
     }
 
-    public boolean isFollower() {
+    public boolean getIsFollower() {
         return isFollower;
     }
 
-    public void setFollower(boolean follower) {
-        isFollower = follower;
+    public void setIsFollower(boolean isFollower) {
+        this.isFollower = isFollower;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class IsFollowerResponse extends Response {
     @Override
     public String toString() {
         return "IsFollowerResponse{" +
-                "isFollower=" + isFollower +
+                "currentlyAFollower=" + isFollower +
                 '}';
     }
 }

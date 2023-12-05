@@ -19,15 +19,14 @@ public class GetFeedRequest extends PaginatedRequest<Status> {
      * Creates an instance.
      *
      * @param authToken the AuthToken of the current user (should be the follower)
-     * @param currUserAlias the alias of the current user (logged in performing the request)
      * @param limit the maximum number of statuses to return.
      * @param lastStatus the last status that was returned in the previous request (null if
      *                     there was no previous request or if no statuses were returned in the
      *                     previous request).
      * @param targetUserAlias the alias of the user whose story/statuses  are to be returned.
      */
-    public GetFeedRequest(AuthToken authToken, String currUserAlias, int limit, Status lastStatus, String targetUserAlias) {
-        super(authToken, currUserAlias, limit, lastStatus);
+    public GetFeedRequest(AuthToken authToken, int limit, Status lastStatus, String targetUserAlias) {
+        super(authToken, limit, lastStatus);
 
         this.targetUserAlias = targetUserAlias;
     }
@@ -54,7 +53,6 @@ public class GetFeedRequest extends PaginatedRequest<Status> {
     public String toString() {
         return "GetFeedRequest{" +
                 "authToken=" + getAuthToken() +
-                ", currUserAlias=" + getCurrUserAlias() +
                 ", targetUserAlias='" + getTargetUserAlias() + '\'' +
                 ", limit=" + getLimit() +
                 ", lastItem (status)=" + getLastItem() +

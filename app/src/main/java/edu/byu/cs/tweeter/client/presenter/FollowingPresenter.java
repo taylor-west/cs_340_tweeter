@@ -100,7 +100,7 @@ public class FollowingPresenter extends PagedPresenter<User> implements PagedObs
      * @param lastFollowee the last followee returned in the previous request (can be null).
      */
     public void getItems(AuthToken authToken, User currUser, User targetUser, int pageSize, User lastFollowee) {
-        getFollowingService().getFollowing(authToken, currUser, targetUser, pageSize, lastFollowee, this);
+        getFollowingService().getFollowing(authToken, targetUser, pageSize, lastFollowee, this);
     }
 
     /**

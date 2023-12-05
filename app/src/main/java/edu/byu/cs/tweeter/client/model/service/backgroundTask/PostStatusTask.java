@@ -27,17 +27,15 @@ public class PostStatusTask extends AuthenticatedTask {
         super(messageHandler);
 
         this.authToken = authToken;
-        this.currUser = currUser;
         this.targetUser = targetUser;
         this.status = status;
     }
 
     public void performTask() {
         try {
-            String currUserAlias = currUser == null ? null : currUser.getAlias();
             String targetUserAlias = targetUser == null ? null : targetUser.getAlias();
 
-            PostStatusRequest request = new PostStatusRequest(authToken, currUserAlias, targetUserAlias, status);
+            PostStatusRequest request = new PostStatusRequest(authToken, targetUserAlias, status);
             PostStatusResponse response = getServerFacade().postStatus(request, StatusService.getPostStatusUrlPath(targetUser.getAlias()));
 
             if (response.isSuccess()) {

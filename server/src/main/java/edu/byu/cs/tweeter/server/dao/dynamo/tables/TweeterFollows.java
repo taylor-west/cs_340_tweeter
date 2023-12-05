@@ -38,7 +38,7 @@ public class TweeterFollows implements DynamoTweeterTable {
     /**
      *  The name of the secondary index for the TweeterFollows table.
      */
-    private static final String SECONDARY_INDEX_NAME = "followeeAlias";
+    private static final String SECONDARY_INDEX_NAME = "followeeAlias-followerAlias-index";
 
     /**
      *  The name of the attribute that is set to be a secondary index for the DynamoDB table.
@@ -62,30 +62,6 @@ public class TweeterFollows implements DynamoTweeterTable {
     private String followeeLastName;
     private String followeeImageURL;
 
-
-//////// CONSTRUCTOR ////////
-
-    /**
-     * Creates a new TweeterFollows object.
-     * @param followerAlias
-     * @param followerFirstName
-     * @param followerLastName
-     * @param followerImageURL
-     * @param followeeAlias
-     * @param followeeFirstName
-     * @param followeeLastName
-     * @param followeeImageURL
-     */
-    public TweeterFollows(String followerAlias, String followerFirstName, String followerLastName, String followerImageURL, String followeeAlias, String followeeFirstName, String followeeLastName, String followeeImageURL) {
-        this.followerAlias = followerAlias;
-        this.followerFirstName = followerFirstName;
-        this.followerLastName = followerLastName;
-        this.followerImageURL = followerImageURL;
-        this.followeeAlias = followeeAlias;
-        this.followeeFirstName = followeeFirstName;
-        this.followeeLastName = followeeLastName;
-        this.followeeImageURL = followeeImageURL;
-    }
 
     //////// GETTERS AND SETTERS ////////
     @DynamoDbPartitionKey
@@ -123,7 +99,7 @@ public class TweeterFollows implements DynamoTweeterTable {
     }
 
     @DynamoDbSortKey
-    @DynamoDbSecondaryPartitionKey(indexNames = SECONDARY_INDEX_NAME)
+    @DynamoDbSecondaryPartitionKey(indexNames = { SECONDARY_INDEX_NAME })
     public String getFolloweeAlias() {
         return followeeAlias;
     }

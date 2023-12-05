@@ -27,7 +27,7 @@ public class GetFollowersHandler implements RequestHandler<FollowersRequest, Fol
         System.out.println("GetFollowersHandler has received a request: " + request.toString());
         FollowService service = new FollowService(new DynamoDAOFactory());
         FollowersResponse response = service.getFollowers(request);
-        System.out.println("GetFollowersHandler.handleRequest returning response with followers: " + response.getAliasString());
+        System.out.println("GetFollowersHandler.handleRequest returning response with followers: " + response.getFollowers());
         return response;
     }
 }

@@ -24,8 +24,8 @@ public class FollowingRequest extends PaginatedRequest<String>{
      *                     there was no previous request or if no followees were returned in the
      *                     previous request).
      */
-    public FollowingRequest(AuthToken authToken, String currUserAlias, int limit, String lastFolloweeAlias, String followerAlias) {
-        super(authToken, currUserAlias, limit, lastFolloweeAlias);
+    public FollowingRequest(AuthToken authToken, int limit, String lastFolloweeAlias, String followerAlias) {
+        super(authToken, limit, lastFolloweeAlias);
 
         this.followerAlias = followerAlias;
     }
@@ -48,12 +48,14 @@ public class FollowingRequest extends PaginatedRequest<String>{
         this.followerAlias = followerAlias;
     }
 
+
+
     @Override
     public String toString() {
         return "FollowingRequest{" +
-                "followerAlias='" + followerAlias + '\'' +
+                "followerAlias='" + getFollowerAlias() + '\'' +
                 ", limit=" + getLimit() +
-                ", lastItem (followee alias)='" + lastItem + '\'' +
+                ", lastItem (followee)='" + getLastItem() + '\'' +
                 '}';
     }
 }
