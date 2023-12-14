@@ -8,6 +8,7 @@ import edu.byu.cs.tweeter.client.model.service.UserService;
 import edu.byu.cs.tweeter.model.domain.AuthToken;
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.model.net.request.LoginRequest;
+import edu.byu.cs.tweeter.model.net.request.UnauthenticatedRequest;
 import edu.byu.cs.tweeter.model.net.response.LoginResponse;
 
 /**
@@ -51,7 +52,7 @@ public class LoginTask extends AuthenticateTask {
     @Override
     protected void performTask() {
         try {
-            LoginRequest request = new LoginRequest(alias, password);
+            LoginRequest request = new LoginRequest(alias, password, UnauthenticatedRequest.DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS);
             LoginResponse response = getServerFacade().login(request, UserService.getLoginUrlPath());
 
             if (response.isSuccess()) {

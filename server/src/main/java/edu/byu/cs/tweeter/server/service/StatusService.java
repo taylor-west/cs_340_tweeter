@@ -1,7 +1,7 @@
 package edu.byu.cs.tweeter.server.service;
 // RECEIVES CALLS FROM THE LAMBDA (SERVER.HANDLERS) AND RETURNS FAKE DATA
 
-import java.util.List;
+import static edu.byu.cs.tweeter.server.sqs.StatusSqsClient.POSTS_Q_URL;
 
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.net.request.GetFeedRequest;
@@ -12,6 +12,7 @@ import edu.byu.cs.tweeter.model.net.response.GetStoryResponse;
 import edu.byu.cs.tweeter.model.net.response.PostStatusResponse;
 import edu.byu.cs.tweeter.server.dao.factories.DAOFactory;
 import edu.byu.cs.tweeter.server.models.DataPage;
+import edu.byu.cs.tweeter.server.sqs.StatusSqsClient;
 
 public class StatusService extends Service {
 
@@ -40,19 +41,13 @@ public class StatusService extends Service {
         checkAuthToken(request.getAuthToken());
         checkStatus(request.getStatus());
 
-        // pull a list of aliases for all Users who follow the posting (current) user
-        List<String> followersAliases = daoFactory.getFollowDAO().getFollowersAliases(request.getTargetUserAlias());
-
-        // add the Status to the feed of each follower
-        for(String followerAlias : followersAliases){
-            daoFactory.getStatusDAO().postToFeed(followerAlias, request.getStatus());
-        }
-
-        // add the Status to the story of the posting (current) user
-        daoFactory.getStatusDAO().postStatus(request.getStatus());
+        // passes the request to the Follow Fetcher Queue, then returns true
+        // literally lies to the user (as per the specs)
+        StatusSqsClient.addMessageToQueue(request, POSTS_Q_URL);
 
         return new PostStatusResponse();
     }
+
 
     private void checkStatus(Status status){
         if(status == null){

@@ -1,6 +1,9 @@
 package edu.byu.cs.tweeter.server.dao.interfaces;
 
+import java.util.List;
+
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.server.dao.dynamo.tables.TweeterUsers;
 
 public interface UserDAO {
     /**

@@ -45,10 +45,10 @@ public class PostStatusRequest extends AuthenticatedRequest {
 
     @Override
     public String toString() {
-        return "PostStatusRequest{" +
+        return "PostStatusRequest{ " +
                 "authToken=" + getAuthToken() +
                 ", targetUserAlias='" + getTargetUserAlias() + '\'' +
-                ", status=" + status.hashCode() +
+                ", status={user: '" + getStatus().getUser().getAlias() + "', post: '" + getStatus().getPost() + "'} " +
                 '}';
     }
 }

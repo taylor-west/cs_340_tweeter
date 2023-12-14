@@ -2,12 +2,16 @@ package edu.byu.cs.tweeter.server.dao.dynamo;
 // RECEIVES CALLS FROM THE SERVER.SERVICE CLASSES AND RETURNS FAKE DATA
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.Status;
 import edu.byu.cs.tweeter.model.domain.User;
+import edu.byu.cs.tweeter.server.dao.dynamo.tables.DynamoTweeterTable;
 import edu.byu.cs.tweeter.server.dao.dynamo.tables.TweeterFeeds;
+import edu.byu.cs.tweeter.server.dao.dynamo.tables.TweeterFollows;
 import edu.byu.cs.tweeter.server.dao.dynamo.tables.TweeterStories;
 import edu.byu.cs.tweeter.server.dao.interfaces.StatusDAO;
 import edu.byu.cs.tweeter.server.models.DataPage;
@@ -16,11 +20,15 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteResult;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 /**
  * A DAO for accessing 'status' data from the database.
@@ -225,6 +233,106 @@ public class DynamoStatusDAO extends DynamoDAO implements StatusDAO {
                 status.getUser().getFirstName(), status.getUser().getLastName(),
                 status.getUser().getImageUrl(), status.getUrls(), status.getMentions());
         table.putItem(newFeed);
+    }
+
+
+    @Override
+    public void batchPostToFeed(List<String> feedOwnerAliases, Status status) {
+        System.out.println("in DynamoStatusDAO.batchPostToFeed for " + feedOwnerAliases.size() + " feeds: statusfeedOwnerAliases= [" + feedOwnerAliases.get(0) + " ... " + feedOwnerAliases.get(feedOwnerAliases.size()-1) + "]" + ", status=" + status);
+
+        assert feedOwnerAliases != null;
+        assert feedOwnerAliases.size() > 0;
+        assert feedOwnerAliases.size() <= 25;
+        assert status != null;
+        assert status.getUser() != null;
+        assert status.getUser().getAlias() != null;
+
+        // creates list of TweeterFeed objects to insert into table
+        List<TweeterFeeds> tweeterFeedsList = new ArrayList<>();
+        List<TweeterFeeds> chunkList = new ArrayList<>();
+//        for(String followerAlias : feedOwnerAliases){
+//            TweeterFeeds newFeed = new TweeterFeeds(followerAlias,
+//                    status.getPost(), status.getTimestamp(),
+//                    Instant.ofEpochSecond(status.timestamp).toString(), status.getUser().getAlias(),
+//                    status.getUser().getFirstName(), status.getUser().getLastName(),
+//                    status.getUser().getImageUrl(), status.getUrls(), status.getMentions());
+//
+////            System.out.println("  adding TweeterFeeds object #" + iter++ + "to tweeterFeedsList: " + newFeed.toString());
+//            tweeterFeedsList.add(newFeed);
+//        }
+//
+//        // batch updates feed table
+//        writeChunkOfTweeterFeeds(tweeterFeedsList);
+//        System.out.println("exit DynamoStatusDAO.batchPostToFeed");
+        for(String followerAlias : feedOwnerAliases){
+            if(chunkList.size() >= 25){
+                // batch updates feed table
+//                System.out.println();
+//                System.out.println("    writing chunk...");
+                writeChunkOfTweeterFeeds(chunkList);
+                tweeterFeedsList.addAll(chunkList);
+
+                // clears chunklist to preserve the count
+                chunkList.clear();
+//                System.out.print("  adding TweeterFeeds objects to chunkList: ");
+            }
+
+            TweeterFeeds newFeed = new TweeterFeeds(followerAlias,
+                    status.getPost(), status.getTimestamp(),
+                    Instant.ofEpochSecond(status.timestamp).toString(), status.getUser().getAlias(),
+                    status.getUser().getFirstName(), status.getUser().getLastName(),
+                    status.getUser().getImageUrl(), status.getUrls(), status.getMentions());
+
+            chunkList.add(newFeed);
+        }
+
+        if(chunkList.size() > 0) {
+            writeChunkOfTweeterFeeds(chunkList);
+            tweeterFeedsList.addAll(chunkList);
+        }
+
+        System.out.println("exit DynamoStatusDAO.batchPostToFeed (wrote " + tweeterFeedsList.size() + " feeds)");
+        return;
+    }
+
+
+    private void writeChunkOfTweeterFeeds(List<TweeterFeeds> tweeterFeedsList) {
+        System.out.println("      in DynamoStatusDAO.writeChunkOfTweeterFeeds for " +  tweeterFeedsList.size() + " TweeterFeeds: tweeterFeedsList=[" + tweeterFeedsList.get(0).getFeedOwnerAlias() + " ... " + tweeterFeedsList.get(tweeterFeedsList.size()-1).getFeedOwnerAlias() + "]");
+
+        DynamoDbTable<TweeterFeeds> table = getFeedsTable();
+
+        if(tweeterFeedsList.size() > 25){
+            throw new RuntimeException("ERROR: Too many TweeterFollows for DynamoStatusDAO.writeChunkOfTweeterFeeds to write (" + tweeterFeedsList.size() + " feeds attempted, from [" + tweeterFeedsList.get(0).getFeedOwnerAlias() + " ... " + tweeterFeedsList.get(tweeterFeedsList.size()-1).getFeedOwnerAlias() + "])");
+        }
+
+
+        WriteBatch.Builder<TweeterFeeds> writeBuilder = WriteBatch.builder(FeedsTableClass).mappedTableResource(table);
+
+        for(TweeterFeeds feed : tweeterFeedsList){
+//            System.out.println("  adding TweeterFeeds object #" + iter++ + " to writeBuilder: " + feed.toString());
+            writeBuilder.addPutItem(builder -> builder.item(feed));
+        }
+
+        BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder()
+                .writeBatches(writeBuilder.build()).build();
+
+        try {
+//            System.out.println("  Attempting to batch write TweeterFeeds objects...");
+            BatchWriteResult result = getEnhancedDynamoClient().batchWriteItem(batchWriteItemEnhancedRequest);
+
+            int numObjectWritten = (tweeterFeedsList.size() - result.unprocessedPutItemsForTable(table).size());
+            System.out.println("          successfully wrote " + numObjectWritten + " feeds!");
+
+            // just hammer dynamodb again with anything that didn't get written this time
+            if (result.unprocessedPutItemsForTable(table).size() > 0) {
+//                System.out.println("    unprocessed items present, running again...");
+                writeChunkOfTweeterFeeds(result.unprocessedPutItemsForTable(table));
+            }
+            System.out.println("          finished write.");
+        } catch (DynamoDbException e) {
+            throw new RuntimeException("[Server Error] Problem occurred while in writeChunkOfTweeterFeeds: " + e.getMessage());
+        }
+        System.out.println("        exit DynamoStatusDAO.writeChunkOfTweeterFeeds");
     }
 
     /**

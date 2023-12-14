@@ -15,6 +15,8 @@ arr=(
         "arn:aws:lambda:us-east-1:172849472790:function:tweeter_post_status"
         "arn:aws:lambda:us-east-1:172849472790:function:tweeter_unfollow"
         "arn:aws:lambda:us-east-1:172849472790:function:tweeter_get_following_count"
+        "arn:aws:lambda:us-east-1:172849472790:function:tweeter_job_handler"
+        "arn:aws:lambda:us-east-1:172849472790:function:tweeter_follow_fetcher"
     )
 for FUNCTION_NAME in "${arr[@]}"
 do

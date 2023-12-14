@@ -8,18 +8,24 @@ import java.util.Map;
 
 import edu.byu.cs.tweeter.model.domain.User;
 import edu.byu.cs.tweeter.server.dao.dynamo.tables.TweeterFollows;
+import edu.byu.cs.tweeter.server.dao.dynamo.tables.TweeterUsers;
 import edu.byu.cs.tweeter.server.dao.interfaces.FollowDAO;
 import edu.byu.cs.tweeter.server.models.DataPage;
+import edu.byu.cs.tweeter.util.Pair;
 import software.amazon.awssdk.core.pagination.sync.SdkIterable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteItemEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteResult;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.enhanced.dynamodb.model.PageIterable;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 
 /**
  * A DAO for accessing 'following' data from the database.
@@ -115,6 +121,52 @@ public class DynamoFollowDAO extends DynamoDAO<TweeterFollows> implements Follow
             throw new RuntimeException("[DAO Error] Error thrown while deleting Follow from database (partitionValue=" + followerAlias + ", sortValue=" + followeeAlias + "): " + e.getMessage());
         }
     }
+
+    /**
+     * Removes a up to 25 User entries from the database at a time
+     *
+     * @param followPairList A list of aliases belonging to the users that should be deleted
+     */
+    public void batchUnfollow(List<Pair<String, String>> followPairList) {
+        assert followPairList != null;
+        System.out.println("in DynamoFollowDAO.batchUnfollow with followPairList: " + followPairList.toString());
+
+        DynamoDbTable<TweeterFollows> table = getTweeterFollowsTable();
+
+//        WriteBatch.Builder<TweeterFollows> writeBuilder = WriteBatch.builder(FollowsTableClass).mappedTableResource(table);
+
+        int iter = 0;
+        List<Pair<String, String>> deletedFollowsList = new ArrayList<>();
+        List<Key> keyChunkList = new ArrayList<>();
+
+        for(Pair<String, String> followPair : followPairList){
+            System.out.println("  adding follow-pair #" + iter++ + " to chunkList");
+
+            Key key = Key.builder()
+                    .partitionValue(followPair.getFirst()).sortValue(followPair.getSecond())
+                    .build();
+            keyChunkList.add(key);
+
+            if(keyChunkList.size() >= 25){
+
+                // batch delete users from table
+                System.out.println("    writing chunk to list...");
+                deleteChunkOfTweeterFollows(keyChunkList);
+
+                // clears chunklist to preserve the count
+                keyChunkList.clear();
+            }
+
+            deletedFollowsList.add(followPair);
+        }
+
+        if(keyChunkList.size() > 0) {
+            deleteChunkOfTweeterFollows(keyChunkList);
+        }
+
+        System.out.println("  deleted " + deletedFollowsList.size() + " follows");
+    }
+
 
     /**
      * Checks the database to see if the follower is currently following the followee. The current \
@@ -257,7 +309,7 @@ public class DynamoFollowDAO extends DynamoDAO<TweeterFollows> implements Follow
                 .queryConditional(QueryConditional.keyEqualTo(key))
                 .limit(limit);
 
-        System.out.println("in getFollowers for partitionValue: " + followeeAlias);
+        System.out.println("in getFollowers: limit=" + limit +  ", partitionValue=" + followeeAlias + ", lastFollowerAlias=" + lastFollowerAlias);
 
         if( (lastFollowerAlias != null) && isNonEmptyString(lastFollowerAlias)) {
             Map<String, AttributeValue> startKey = new HashMap<>();
@@ -281,34 +333,76 @@ public class DynamoFollowDAO extends DynamoDAO<TweeterFollows> implements Follow
                     page.items().forEach(entry -> result.getValues().add(entry.userFromFollower()));
                 });
 
-        System.out.println("returning getFollowers: " + result.toString());
+        System.out.println("  returning getFollowers with " + result.getValues().size() + " followers: [" + result.getValues().get(0).getAlias() + " ... " + result.getValues().get(result.getValues().size() -1).getAlias() + "]");
         return result;
     }
 
+    /**
+     * Returns a list of follower aliases, grouped into pages.
+     * @param followeeAlias
+     * @return
+     */
     @Override
-    public List<String> getFollowersAliases(String followeeAlias){
-        // List<String> followersAliases = find(FOLLOWS_TABLE_NAME, FOLLOWS_TABLE_CLASS, followeeAlias, null);
+    public DataPage<String> getFollowersAliases(String followeeAlias, int limit, String lastFollowerAlias) {
+//        assert followeeAlias != null;
+//
+//        DynamoDbIndex<TweeterFollows> index = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);
+//        Key key = Key.builder()
+//                .partitionValue(followeeAlias)
+//                .build();
+//
+//        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+//                .queryConditional(QueryConditional.keyEqualTo(key))
+//                .build();
+//
+//        List< String > followerAliases = new ArrayList<>();
+//
+//        SdkIterable<Page<TweeterFollows>> sdkIterable = index.query(request);
+//        PageIterable<TweeterFollows> pages = PageIterable.create(sdkIterable);
+//        pages.stream()
+//                .forEach((Page<TweeterFollows> page) -> {
+//                    page.items().forEach(entry -> followerAliases.add(entry.getFollowerAlias()));
+//                });
+//
+//        return followerAliases;
+
+        assert limit > 0;
         assert followeeAlias != null;
 
-        DynamoDbIndex<TweeterFollows> index = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);
         Key key = Key.builder()
                 .partitionValue(followeeAlias)
                 .build();
 
-        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+        QueryEnhancedRequest.Builder requestBuilder = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(key))
-                .build();
+                .limit(limit);
 
-        List<String> followerAliases = new ArrayList<String>();
+        System.out.println("in getFollowersAliases: limit=" + limit +  ", partitionValue=" + followeeAlias + ", lastFollowerAlias=" + lastFollowerAlias);
 
+        if( (lastFollowerAlias != null) && isNonEmptyString(lastFollowerAlias)) {
+            Map<String, AttributeValue> startKey = new HashMap<>();
+            startKey.put(FolloweeHandleAttr, AttributeValue.builder().s(followeeAlias).build());
+            startKey.put(FollowerHandleAttr, AttributeValue.builder().s(lastFollowerAlias).build());
+
+            requestBuilder.exclusiveStartKey(startKey);
+        }
+
+        QueryEnhancedRequest request = requestBuilder.build();
+
+        DataPage<String> result = new DataPage<>();
+
+        DynamoDbIndex<TweeterFollows> index = getEnhancedDynamoClient().table(FollowsTableName, TableSchema.fromBean(FollowsTableClass)).index(FollowsTableSecondaryIndexName);;
         SdkIterable<Page<TweeterFollows>> sdkIterable = index.query(request);
         PageIterable<TweeterFollows> pages = PageIterable.create(sdkIterable);
         pages.stream()
+                .limit(1)
                 .forEach((Page<TweeterFollows> page) -> {
-                    page.items().forEach(entry -> followerAliases.add(entry.getFollowerAlias()));
+                    result.setHasMorePages(page.lastEvaluatedKey() != null);
+                    page.items().forEach(entry -> result.getValues().add(entry.userFromFollower().getAlias()));
                 });
 
-        return followerAliases;
+        System.out.println("  returning getFollowersAliases with " + result.getValues().size() + " follower aliases: [" + result.getValues().get(0) + " ... " + result.getValues().get(result.getValues().size() -1) + "]");
+        return result;
     }
 
     /**
@@ -322,4 +416,132 @@ public class DynamoFollowDAO extends DynamoDAO<TweeterFollows> implements Follow
 
         return tweeterFollowsDynamoDbTable;
     }
+
+
+    /**
+     * Adds up to 25 "follow" relationships to the database at a time
+     * @param follows a list of TweeterFollows objects to add to the database
+     */
+    public void batchFollow(List<TweeterFollows> follows) {
+        assert follows != null;
+        System.out.println("in DynamoFollowDAO.batchFollow for " + follows.size() + "TweeterFollows: [" + follows.get(0).getFollowerAlias() + " ... " + follows.get(follows.size()-1).getFollowerAlias() + "]");
+
+        // creates list of TweeterFeed objects to insert into table
+        // adds the TweeterFeed objects to a request
+        List<TweeterFollows> tweeterFollowsList = new ArrayList<>();
+        int iter = 0;
+        List<TweeterFollows> chunkList = new ArrayList<>();
+
+//        System.out.print("  adding TweeterFollows objects to chunkList: ");
+        for(TweeterFollows follow : follows){
+//            System.out.print( follow.getFollowerAlias() + ", " );
+            if(chunkList.size() >= 25){
+                // batch updates feed table
+//                System.out.println();
+//                System.out.println("    writing chunk...");
+                writeChunkOfTweeterFollows(chunkList);
+                tweeterFollowsList.addAll(chunkList);
+
+                // clears chunklist to preserve the count
+                chunkList.clear();
+//                System.out.print("  adding TweeterFollows objects to chunkList: ");
+            }
+
+            chunkList.add(follow);
+        }
+
+        if(chunkList.size() > 0) {
+            writeChunkOfTweeterFollows(chunkList);
+            tweeterFollowsList.addAll(chunkList);
+        }
+
+        System.out.println("DynamoFollowDAO.batchFollow wrote " + tweeterFollowsList.size() + " follows");
+        return;
+    }
+
+
+    private void writeChunkOfTweeterFollows(List<TweeterFollows> tweeterFollowsList) {
+        System.out.println("      in DynamoFollowDAO.writeChunkOfTweeterFollows for " + tweeterFollowsList.size()  + " TweeterFollows: [" + tweeterFollowsList.get(0).getFollowerAlias() + " ... " + tweeterFollowsList.get(tweeterFollowsList.size()-1).getFollowerAlias() + "]");
+
+        DynamoDbTable<TweeterFollows> table = getTweeterFollowsTable();
+
+        if(tweeterFollowsList.size() > 25){
+            throw new RuntimeException("ERROR: Too many TweeterFollows for DynamoFollowDAO.writeChunkOfTweeterFollows to write (" + tweeterFollowsList.size() + " follows attempted, from [" + tweeterFollowsList.get(0).getFollowerAlias() + " ... " + tweeterFollowsList.get(tweeterFollowsList.size()-1).getFollowerAlias() + "])");
+        }
+
+
+        WriteBatch.Builder<TweeterFollows> writeBuilder = WriteBatch.builder(FollowsTableClass).mappedTableResource(table);
+
+        for(TweeterFollows follow : tweeterFollowsList){
+            writeBuilder.addPutItem(builder -> builder.item(follow));
+        }
+//        System.out.print("        added " + tweeterFollowsList.size() + " keys to writeBuilder") ;
+//        System.out.println();
+
+        BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder()
+                .writeBatches(writeBuilder.build()).build();
+
+        try {
+//            System.out.println("        Attempting to batch write TweeterFollows objects...");
+            BatchWriteResult result = getEnhancedDynamoClient().batchWriteItem(batchWriteItemEnhancedRequest);
+
+            int numObjectWritten = (tweeterFollowsList.size() - result.unprocessedPutItemsForTable(table).size());
+            System.out.println("          successfully wrote " + numObjectWritten + " objects!");
+
+            // just hammer dynamodb again with anything that didn't get written this time
+            if (result.unprocessedPutItemsForTable(table).size() > 0) {
+//                System.out.println("           unprocessed items present, running again...");
+                writeChunkOfTweeterFollows(result.unprocessedPutItemsForTable(table));
+            }
+            System.out.println("          finished write.");
+        } catch (DynamoDbException e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException("ERROR: problem while bulk adding Follows: " + e.getMessage());
+        }
+        System.out.println("        exit DynamoFollowsDAO.writeChunkOfTweeterFollows");
+    }
+
+    private void deleteChunkOfTweeterFollows(List<Key> keyList) {
+        System.out.println("in DynamoFollowDAO.deleteChunkOfTweeterFollows");
+
+        DynamoDbTable<TweeterFollows> table = getTweeterFollowsTable();
+
+        if(keyList.size() > 25){
+            throw new RuntimeException("ERROR: Too many follows to delete (attempted " + keyList.size() + " keys)");
+        }
+
+
+        WriteBatch.Builder<TweeterFollows> writeBuilder = WriteBatch.builder(FollowsTableClass).mappedTableResource(table);
+
+        int iter = 0;
+        System.out.print("  adding keys to writeBuilder: # ");
+        for(Key key : keyList){
+            System.out.print(iter++ + ", ");
+            writeBuilder.addDeleteItem(key);
+        }
+
+        BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder()
+                .writeBatches(writeBuilder.build()).build();
+
+        try {
+            System.out.println("  Attempting to batch delete " + keyList.size() + " follows...");
+            BatchWriteResult result = getEnhancedDynamoClient().batchWriteItem(batchWriteItemEnhancedRequest);
+            System.out.println("    result=" + result.toString());
+
+            int numObjectWritten = (keyList.size() - result.unprocessedPutItemsForTable(table).size());
+            System.out.println("    successfully deleted " + numObjectWritten + " objects!");
+
+            // just hammer dynamodb again with anything that didn't get written this time
+            if (result.unprocessedPutItemsForTable(table).size() > 0) {
+                System.out.println("    unprocessed items present, running again...");
+                deleteChunkOfTweeterFollows(result.unprocessedDeleteItemsForTable(table));
+            }
+            System.out.println("    finished deleted.");
+        } catch (DynamoDbException e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
+        System.out.println("  exit DynamoFollowDAO.deleteChunkOfTweeterFollows");
+    }
+
 }

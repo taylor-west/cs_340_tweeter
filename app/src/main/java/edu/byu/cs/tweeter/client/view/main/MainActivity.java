@@ -229,6 +229,7 @@ public class MainActivity extends AppCompatActivity implements MainPresenter.Mai
         try {
             presenter.onStatusPosted(post, Cache.getInstance().getCurrUser(),
                     Cache.getInstance().getCurrUserAuthToken());
+            showInfoMessage("Posting status...");
         } catch (Exception ex) {
             Log.e(LOG_TAG, ex.getMessage(), ex);
             showErrorMessage("Failed to post the status because of exception: " + ex.getMessage());

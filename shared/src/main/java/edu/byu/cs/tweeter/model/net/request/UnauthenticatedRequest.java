@@ -1,11 +1,11 @@
 package edu.byu.cs.tweeter.model.net.request;
 
 public abstract class UnauthenticatedRequest {
-    protected final static int DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS = (30 * 60); // 30 minutes
-    private String username;
-    private String password;
+    public final static int DEFAULT_AUTHTOKEN_LIFESPAN_IN_SECONDS = (30 * 60); // 30 minutes
+    protected String username;
+    protected String password;
 
-    private int desiredAuthTokenLifespan;
+    protected int desiredAuthTokenLifespan;
 
     /**
      * Allows construction of the object from Json. Private so it won't be called in normal code.
@@ -14,9 +14,9 @@ public abstract class UnauthenticatedRequest {
 
     /**
      * Creates an Instance (only used for inheritance).
-     *
      * @param username the alleged username of the user attempting the request
      * @param password the alleged password of the user attempting the request
+     * @param desiredAuthTokenLifespan the number of seconds that the authToken should be valid for if the request succeeds (defaults to 30 minutes)
      */
     public UnauthenticatedRequest(String username, String password, Integer desiredAuthTokenLifespan) {
         this.username = username;
